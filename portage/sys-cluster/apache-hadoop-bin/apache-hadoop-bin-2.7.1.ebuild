@@ -24,6 +24,7 @@ RDEPEND=">=virtual/jre-1.6
 	net-misc/openssh
 	net-misc/rsync"
 
+S=${WORKDIR}/hadoop-${PV}
 INSTALL_DIR=/opt/hadoop
 export CONFIG_PROTECT="${CONFIG_PROTECT} ${INSTALL_DIR}/etc/hadoop"
 
