@@ -87,12 +87,13 @@ src_install() {
 	   sed -e "20i<property><name>yarn.scheduler.minimum-allocation-mb</name><value>100</value></property>" -i etc/hadoop/yarn-site.xml
 	   sed -e "20i<property><name>yarn.scheduler.maximum-allocation-mb</name><value>100</value></property>" -i etc/hadoop/yarn-site.xml
 	   sed -e "20i<property><name>yarn.nodemanager.resource.memory-mb</name><value>200</value></property>" -i etc/hadoop/yarn-site.xml
+           sed -e "20i<property><name>yarn.scheduler.maximum-allocation-vcores</name><value>1</value></property>" -i etc/hadoop/yarn-site.xml
 	fi
 
 	# Update mapred-site.xml
 	[ -f etc/hadoop/mapred-site.xml ] || cp etc/hadoop/mapred-site.xml.template etc/hadoop/mapred-site.xml
-	sed -e "20i<property><name>yarn.nodemanager.aux-services</name><value>mapreduce_shuffle</value></property>" -i etc/hadoop/mapred-site.xml || die "sed failed"
-	sed -e "21i<property><name>yarn.resourcemanager.hostname</name><value>$resourcemanager</value></property>" -i etc/hadoop/mapred-site.xml
+	sed -e "20i<property><name>mapreduce.framework.name</name><value>yarn/value></property>" -i etc/hadoop/mapred-site.xml || die "sed failed"
+	sed -e "21i<property><name>mapreduce.jobhistory.address</name><value>$historyserver</value></property>" -i etc/hadoop/mapred-site.xml
 	if [ $sandbox -ne 0 ] ; then
 	   sed -e "20i<property><name>mapreduce.map.memory.mb</name><value>100</value></property>" -i etc/hadoop/mapred-site.xml
 	   sed -e "20i<property><name>mapreduce.reduce.memory.mb</name><value>100</value></property>" -i etc/hadoop/mapred-site.xml
