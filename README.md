@@ -1,5 +1,5 @@
 # Gentoo Hadoop
-An up-to-date deployment process for Hadoop modules on Gentoo Linux. The ebuilds were collected from different repositories and updated to align with the latest software versions and the deployents modes described further
+An up-to-date deployment process for Hadoop modules on Gentoo Linux. The ebuilds were collected from different repositories and updated to align with the latest software versions and the deployments modes described below
 
 ## Motivation
 
@@ -34,10 +34,14 @@ emerge sys-cluster/apache-hadoop-bin
 su - hdfs -c 'hdfs namenode -format '  # format the namenode
 
 /etc/init.d/hadoop-namenode start      # start the namenode
-/etc/init.d/hadoop-datanode start      # start a datanode
-/etc/init.d/hadoop-xxx start           # start module xxx (add to boot via rc-update)
+rc-update add hadoop-namenode          # add the namenode to boot
+/etc/init.d/hadoop-xxx start           # start module xxx 
+rc-update add hadoop-xxx               # add the module xxx to boot
+
+su - hdfs -c 'hadoop fs -mkdir /tmp ; hadoop fs -chmod 777 /tmp' # create the HDFS tmp dir
+
 ~~~
-Ignore the warnings `QA Notice..` on the Elf files
+Ignore the emerge warnings `QA Notice..` on the Elf files
 
 This package will create the Unix users `hdfs`, `yarn` and `mapred` if they do not exist. Set the passwords for those users
 
@@ -45,13 +49,18 @@ Verifications:
 * Login as `hdfs` and add file to HDFS for instance `hadoop fs -put  /usr/portage/distfiles/hadoop-2.7.1.tar.gz  /`
 * Check NameNode status on http://<namenode>:50070/
 * Check ResourceManager status on http://<resourcemanager>:8088/
+* Check HistoryServer status on http://<historyserver>:19888/
+* Install Pig and run a MapReduce Job
 
 ### Pig (0.15.0)
 ~~~
 emerge dev-lang/apache-pig-bin
 ~~~
 Verifications:
-* Login as `mapreduce`, download and extract the tutorial file (`wget https://cwiki.apache.org/confluence/download/attachments/27822259/pigtutorial.tar.gz`) then run `pig -x local script1-local.pig` from the extracted dir
+* Login as `mapreduce`, download and extract the tutorial file `https://cwiki.apache.org/confluence/download/attachments/27822259/pigtutorial.tar.gz` 
+* Run Pig in local mode: `pig -x local script1-local.pig` from the extracted dir
+* Run Pig in mapreduce mode: `pig script1-hadoop.pig`
+
 
 ### Hive
 ~~~
