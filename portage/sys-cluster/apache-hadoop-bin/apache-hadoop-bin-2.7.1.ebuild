@@ -93,7 +93,7 @@ src_install() {
 	# Update mapred-site.xml
 	[ -f etc/hadoop/mapred-site.xml ] || cp etc/hadoop/mapred-site.xml.template etc/hadoop/mapred-site.xml
 	sed -e "20i<property><name>mapreduce.framework.name</name><value>yarn/value></property>" -i etc/hadoop/mapred-site.xml || die "sed failed"
-	sed -e "21i<property><name>mapreduce.jobhistory.address</name><value>$historyserver</value></property>" -i etc/hadoop/mapred-site.xml
+	sed -e "21i<property><name>mapreduce.jobhistory.address</name><value>$historyserver:10020</value></property>" -i etc/hadoop/mapred-site.xml
 	if [ $sandbox -ne 0 ] ; then
 	   sed -e "20i<property><name>mapreduce.map.memory.mb</name><value>100</value></property>" -i etc/hadoop/mapred-site.xml
 	   sed -e "20i<property><name>mapreduce.reduce.memory.mb</name><value>100</value></property>" -i etc/hadoop/mapred-site.xml
