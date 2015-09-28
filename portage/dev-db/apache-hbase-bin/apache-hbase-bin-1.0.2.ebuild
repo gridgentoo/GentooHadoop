@@ -26,17 +26,24 @@ RDEPEND=">=virtual/jre-1.6
 # dev-lang/ruby
 
 
-S="${WORKDIR}/${MY_P}-bin"
-INSTALL_DIR=/opt/"${PN}"
-DATA_DIR=/var/db/"${PN}"
-export CONFIG_PROTECT="${CONFIG_PROTECT} ${INSTALL_DIR}/conf"
+S="${WORKDIR}/${MY_P}"
+INSTALL_DIR=/opt/"${MY_PN}"
+DATA_DIR=/data/"${MY_PN}"
 
 src_install() {
-	# The hadoop-env.sh file needs JAVA_HOME set explicitly
+	# Update hbase-env.sh
+	JAVA_HOME=$(java-config -g JAVA_HOME)
 	sed -i -e "2iexport JAVA_HOME=${JAVA_HOME}" conf/hbase-env.sh || die "sed failed"
+	sed -i -e "3iexport HBASE_LOG_DIR=/var/log/hbase"  conf/hbase-env.sh
+
 
 	dodir "${INSTALL_DIR}"
 	mv "${S}"/* "${D}${INSTALL_DIR}" || die "install failed"
+
+        # make useful dirs
+        diropts -m770 -o root -g hadoop
+        dodir /var/log/"${MY_PN}"
+        dodir /data/hbase
 
 	# env file
 	cat > 99"${PN}" <<-EOF
@@ -58,6 +65,6 @@ src_install() {
 }
 
 pkg_postinst() {
-	elog "For info on configuration see http://hadoop.apache.org/${MY_PN}/docs/r${PV}"
+	elog "For info on configuration see http://hbase.apache.org/book.html"
 }
 
