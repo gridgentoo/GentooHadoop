@@ -31,12 +31,19 @@ src_install() {
 	insinto /usr/share/"${MY_PN}"
 	#doins "${MY_P}"-withouthadoop.jar
 	#newins "${MY_P}"-withouthadoop.jar "${MY_P}"-core.jar
-	mv "${S}"/{contrib,lib,scripts,src/packages/templates,test,tutorial} "${D}"/usr/share/"${MY_PN}" || die
+	mv "${S}"/{contrib,lib,scripts,src/packages/templates,test,*.jar} "${D}"/usr/share/"${MY_PN}" || die
 
 	insinto /etc/"${MY_PN}"
 	doins conf/*
 
 	dosbin src/packages/*.sh
+
+        cat > 99"${MY_PN}" <<-EOF
+                PIG_HOME="/usr/share/${MY_PN}"
+                PIG_CLASSPATH="/opt/hadoop"
+EOF
+	[ `egrep -c "^[0-9].*#.* sandbox" /etc/hosts` -ne 0 ] && echo "PIG_HEAPSIZE=200" >> 99"${MY_PN}"
+        doenvd 99"${MY_PN}" || die "doenvd failed"
 
 	dodoc README.txt RELEASE_NOTES.txt CHANGES.txt
 	dohtml -r docs/*
