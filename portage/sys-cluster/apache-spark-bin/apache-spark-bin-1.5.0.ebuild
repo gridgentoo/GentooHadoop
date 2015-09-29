@@ -26,16 +26,24 @@ RDEPEND=">=virtual/jre-1.6
 	scala? ( dev-lang/scala )"
 
 
-S="${WORKDIR}/${MY_P}"
-INSTALL_DIR=/opt/hive
+S="${WORKDIR}/${MY_P}-bin-hadoop2.6"
+INSTALL_DIR=/opt/spark
 
 src_install() {
 	dodir "${INSTALL_DIR}"
         mv "${S}"/* "${D}${INSTALL_DIR}" || die "install failed"
+
+        cat > 99"${MY_PN}" <<-EOF
+                SPARK_HOME="${INSTALL_DIR}"
+                SPARK_CONF_DIR="/etc/hadoop"
+		PATH="${INSTALL_DIR}/bin"
+EOF
+	doenvd 99"${MY_PN}" || die "doenvd failed"
+
 }
 
 pkg_postinst() {
-    elog "For info on configuration see https://cwiki.apache.org/confluence/display/Hive/Home"
+    elog "For info on configuration see http://spark.apache.org/docs/latest/"
 }
 
 

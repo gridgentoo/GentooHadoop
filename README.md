@@ -46,7 +46,7 @@ Ignore the emerge warnings `QA Notice..` on the Elf files
 This package will create the Unix users `hdfs`, `yarn` and `mapred` if they do not exist. Set the passwords for those users
 
 Verifications:
-* Login as `hdfs` and add file to HDFS for instance `hadoop fs -put  /usr/portage/distfiles/hadoop-2.7.1.tar.gz  /`
+* Login as `mapred` and add file to HDFS for instance `hadoop fs -put  /usr/portage/distfiles/hadoop-2.7.1.tar.gz  /`
 * Check NameNode status on http://<namenode>:50070/
 * Check ResourceManager status on http://<resourcemanager>:8088/
 * Check HistoryServer status on http://<historyserver>:19888/
@@ -61,23 +61,31 @@ Verifications:
 * Run Pig in local mode: `pig -x local script1-local.pig` from the extracted dir
 * Run Pig in mapreduce mode: `pig script1-hadoop.pig`
 
-
 ### Hive
 ~~~
 emerge dev-db/apache-bin-hive
 ~~~
+Verifications:
 *in progress*
 
 ### HBase
 ~~~
 emerge dev-db/apache-bin-hbase
 ~~~
-*in progress*
+Verifications:
+* Login as `mapred` and add a text file for instance `README.md`
+* Run the following commands in PythonSpark (`pyspark`) and check results
+~~~
+textFile = sc.textFile("README.md")
+textFile.count()
+~~~
+
 
 ### Spark (1.5.0, hadoop based)
 ~~~
 emerge sys-cluster/apache-bin-spark
 ~~~
+Verifications:
 *in progress*
 
 ## Environment Details
@@ -89,11 +97,13 @@ mapred:hadoop
 ~~~
 * Directories created
 ~~~
-/etc/hadoop       # config files
-/var/log/hadoop/  # log files
-/var/tmp/hadoop/  # tmp files including Process PIDs
-/opt/hadoop       # binaries
+/etc/hadoop       # Hadoop config files
+/var/log/hadoop/  # Hadoop log files
+/var/tmp/hadoop/  # Hadoop tmp files including Process PIDs
+/opt/hadoop       # Hadoop binaries
 /data/hdfs        # HDFS data files
+/usr/share/pig/   # Pig binaries
+/opt/spark        # Spark binaries
 ~~~
 * Environment files
 
