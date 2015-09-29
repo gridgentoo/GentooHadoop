@@ -73,20 +73,19 @@ Verifications:
 emerge dev-db/apache-bin-hbase
 ~~~
 Verifications:
+*in progress*
+
+### Spark (1.5.0, hadoop based version)
+~~~
+emerge sys-cluster/apache-bin-spark
+~~~
+Verifications:
 * Login as `mapred` and add a text file for instance `README.md`
 * Run the following commands in PythonSpark (`pyspark`) and check results
 ~~~
 textFile = sc.textFile("README.md")
 textFile.count()
 ~~~
-
-
-### Spark (1.5.0, hadoop based)
-~~~
-emerge sys-cluster/apache-bin-spark
-~~~
-Verifications:
-*in progress*
 
 ## Environment Details
 * Users created
