@@ -1,0 +1,27 @@
+#!/sbin/runscript
+
+NAME=cassandra
+DESC="Apache Cassandra v{PV}"
+PIDFILE=/var/tmp/$NAME/$NAME.pid
+
+_CASSANDRA_DIR="/opt/${NAME}"
+
+DAEMON=${_CASSANDRA_DIR}/bin/cassandra
+DAEMON_OPTS="-p $PIDFILE"
+USER="cassandra"
+
+. ${_CASSANDRA_DIR}/conf/cassandra-env.sh
+
+start() {
+    ebegin "Starting ${DESC}"
+
+    start-stop-daemon --start --user $USER --exec $DAEMON --background --pidfile "$PIDFILE" -- $DAEMON_OPTS >/dev/null
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${DESC}"
+    start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
+    eend $?
+}
+

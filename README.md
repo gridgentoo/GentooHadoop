@@ -28,7 +28,7 @@ ebuild apache-hadoop-bin-2.7.1.ebuild digest
 
 (this is a temporary solution until use of Gentoo overlay)
 
-### Hadoop Common (2.7.1)
+### Apache Hadoop Common (2.7.1)
 ~~~
 emerge sys-cluster/apache-hadoop-bin
 su - hdfs -c 'hdfs namenode -format '  # format the namenode
@@ -52,7 +52,7 @@ Verifications:
 * Check HistoryServer status on http://<historyserver>:19888/
 * Install Pig and run a MapReduce Job
 
-### Pig (0.15.0)
+### Apache Pig (0.15.0)
 ~~~
 emerge dev-lang/apache-pig-bin
 ~~~
@@ -61,14 +61,14 @@ Verifications:
 * Run Pig in local mode: `pig -x local script1-local.pig` from the extracted dir
 * Run Pig in mapreduce mode: `pig script1-hadoop.pig`
 
-### Hive
+### Apache Hive (1.2.1)
 ~~~
 emerge dev-db/apache-bin-hive
 ~~~
 Verifications:
 *in progress*
 
-### HBase
+### Apache HBase (1.0.2)
 ~~~
 emerge dev-db/apache-bin-hbase
 ~~~
@@ -86,6 +86,18 @@ Verifications:
 textFile = sc.textFile("README.md")
 textFile.count()
 ~~~
+
+### Cassandra (2.2.1 latest)
+Note: cassandra has no dependency with Hadoop Common package and can be installed separately. The ebuild creates the user `cassandra:cassandra`, install the binaries in `/opt/cassandra` and use `/data` so store DB files.
+
+To install cassandra in cluster mode just add the keyword `listen` in `/etc/hosts` for the listener server
+~~~
+emerge dev-db/apache-cassandra-bin
+/etc/init.d/cassandra start      # start the DB (to be done on all cluster nodes)
+rc-update add cassandra          # add to boot
+~~~
+Verifications:
+
 
 ## Environment Details
 * Users created
