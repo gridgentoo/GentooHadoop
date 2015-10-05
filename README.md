@@ -90,7 +90,7 @@ textFile.count()
 ### Cassandra (2.2.1 latest)
 Note: cassandra has no dependency with Hadoop Common package and can be installed separately. The ebuild creates the user `cassandra:cassandra`, install the binaries in `/opt/cassandra` and use `/data` so store DB files.
 
-To install cassandra in cluster mode just add the keyword `listen` in `/etc/hosts` for the listener server
+To install cassandra in cluster mode just add the keyword `seed` in `/etc/hosts` for the seed(s)
 ~~~
 emerge dev-db/apache-cassandra-bin
 /etc/init.d/cassandra start      # start the DB (to be done on all cluster nodes)

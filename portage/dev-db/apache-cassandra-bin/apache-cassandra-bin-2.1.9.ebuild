@@ -38,8 +38,8 @@ src_prepare() {
 src_install() {
 	# get the topology from /etc/hosts
 	hostname=`uname -n`
-	listen=`egrep "^[0-9].*#.* listen" /etc/hosts | awk '{print $2}' `
-	[[ -n $listen ]] || listen=$hostname
+	seeds=`egrep "^[0-9].*#.* seed" /etc/hosts | awk '{print $1}' `
+	[[ -n $seeds ]] && seeds=`echo ${seeds} | sed 's/ /,/g' `
 	sandbox=`egrep -c "^[0-9].*#.* sandbox" /etc/hosts`
 
 	insinto ${INSTALL_DIR}
@@ -52,7 +52,9 @@ src_install() {
 		sed -e "2iexport HEAP_NEWSIZE=200M" -i conf/cassandra-env.sh
 	fi
 	# update yaml for cluster case
-	sed -e "s|listen_address: localhost|listen_address: $listen|"  -i conf/cassandra.yaml || die
+	sed -e "s|listen_address: localhost|# listen_address: not used|" \
+		-e "s|# listen_interface: |listen_interface: eth0|" -i conf/cassandra.yaml || die
+	[[ -n $seeds ]] && sed -e  "s|seeds: .*|seeds: \"${seeds}\"|" -i conf/cassandra.yaml || die
 
 	doins -r bin conf interface lib pylib tools
 
