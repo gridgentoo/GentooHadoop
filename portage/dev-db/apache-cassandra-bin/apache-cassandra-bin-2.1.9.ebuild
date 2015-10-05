@@ -53,7 +53,7 @@ src_install() {
 	fi
 	# update yaml for cluster case
 	sed -e "s|listen_address: localhost|# listen_address: not used|" \
-		-e "s|# listen_interface: |listen_interface: eth0|" -i conf/cassandra.yaml || die
+		-e "s|# listen_interface: .*|listen_interface: eth0|" -i conf/cassandra.yaml || die
 	[[ -n $seeds ]] && sed -e  "s|seeds: .*|seeds: \"${seeds}\"|" -i conf/cassandra.yaml || die
 
 	doins -r bin conf interface lib pylib tools
@@ -71,6 +71,7 @@ src_install() {
 	dodir /var/log/cassandra
 	fowners -R cassandra:cassandra ${INSTALL_DIR}
 	fowners cassandra:cassandra /data/cassandra /var/tmp/cassandra /var/log/cassandra
+	dosym /var/log/cassandra ${INSTALL_DIR}/logs
 
 	newinitd "${FILESDIR}/cassandra.initd" cassandra
 

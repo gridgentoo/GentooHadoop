@@ -1,15 +1,22 @@
 #!/sbin/runscript
+# Copyright 1999-2011 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+depend() {
+    use net
+}
+
 
 PIDFILE=/var/tmp/cassandra/cassandra.pid
 DAEMON=/opt/cassandra/bin/cassandra
 DAEMON_OPTS="-p $PIDFILE"
 USER="cassandra"
 
-. /opt/cassandra/conf/cassandra-env.sh
-
 start() {
     ebegin "Starting Apache Cassandra"
-    start-stop-daemon --start --user $USER --exec $DAEMON --background --pidfile "$PIDFILE" -- $DAEMON_OPTS >/dev/null
+    . /opt/cassandra/conf/cassandra-env.sh
+    start-stop-daemon --start --user $USER --exec $DAEMON --background --pidfile "$PIDFILE" -- $DAEMON_OPTS
     eend $?
 }
 
