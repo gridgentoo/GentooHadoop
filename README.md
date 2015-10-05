@@ -95,8 +95,8 @@ To install cassandra in cluster mode just add the keyword `seed` in `/etc/hosts`
 emerge dev-db/apache-cassandra-bin
 /etc/init.d/cassandra start      # start the DB (to be done on all cluster nodes)
 rc-update add cassandra          # add to boot
+su - cassandra nodetool status   # cluster status
 ~~~
-Verifications:
 
 
 ## Environment Details
