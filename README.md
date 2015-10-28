@@ -88,9 +88,10 @@ textFile.count()
 ~~~
 
 ### Cassandra (2.2.1 latest)
-Note: cassandra has no dependency with Hadoop Common package and can be installed separately. The ebuild creates the user `cassandra:cassandra`, install the binaries in `/opt/cassandra` and use `/data` so store DB files.
+Note: cassandra has no dependency with Hadoop Common package and can be installed separately. The ebuild creates the user `cassandra:cassandra`, install the binaries in `/opt/cassandra` and use `/data/cassandra` so store DB files.
 
 To install cassandra in cluster mode just add the keyword `seed` in `/etc/hosts` for the seed(s)
+The sandbox option will reduce the memory settings to minimum (256MB)
 ~~~
 emerge dev-db/apache-cassandra-bin
 /etc/init.d/cassandra start      # start the DB (to be done on all cluster nodes)
@@ -144,7 +145,7 @@ mapred-site.xml
 ~~~
 
 ## To Do
-
+* Review the ebuilds code to align with best practices
 * Add the ebuild to the gentoo overlay repository (https://wiki.gentoo.org/wiki/Project:Overlays)
 
 

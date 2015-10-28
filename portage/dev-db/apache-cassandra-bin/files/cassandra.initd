@@ -8,15 +8,14 @@ depend() {
 }
 
 
-PIDFILE=/var/tmp/cassandra/cassandra.pid
-DAEMON=/opt/cassandra/bin/cassandra
-DAEMON_OPTS="-p $PIDFILE"
-USER="cassandra"
+PIDDIR=/var/run/local
+PIDFILE=$PIDDIR/cassandra.pid
+[ -d $PIDDIR ] || mkdir -m=777 $PIDDIR
+
 
 start() {
     ebegin "Starting Apache Cassandra"
-    . /opt/cassandra/conf/cassandra-env.sh
-    start-stop-daemon --start --user $USER --exec $DAEMON --background --pidfile "$PIDFILE" -- $DAEMON_OPTS
+    start-stop-daemon --start --user cassandra --exec /opt/cassandra/bin/cassandra --background --pidfile "$PIDFILE" -- -p $PIDFILE
     eend $?
 }
 

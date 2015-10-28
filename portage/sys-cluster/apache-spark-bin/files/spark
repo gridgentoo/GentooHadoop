@@ -1,0 +1,33 @@
+# Copyright 1999-2011 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+depend() {
+         use dns net ssh
+}
+
+init_env_vars() {
+	sparkmaster=`egrep "^[0-9].*#.* sparkmaster" /etc/hosts | awk '{print $2}' `
+	if  [ "${SVCNAME}" == "spark" ]; then
+            DN_CMD="start-slave.sh"
+	    DAEMON="slave"
+	else
+	    DN_CMD="start-master.sh"
+	    DAEMON="master"
+	fi
+}
+
+start() {
+        init_env_vars
+        ebegin "Starting Apache Spark $DAEMON"
+        start-stop-daemon --start --quiet -u spark -x /opt/spark/sbin/${DN_CMD} 
+        eend $?
+}
+
+stop() {
+        init_env_vars
+        ebegin "Stopping Apache Spark $DAEMON"
+        start-stop-daemon --stop --quiet --pidfile /tmp/spark-hadoop-org.apache.spark.deploy.master.Master-1.pid
+        eend $?
+}
+

@@ -3,12 +3,10 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-extra_commands="format"
-
 DAEMON=${SVCNAME/hadoop-}
 
 depend() {
-	 use dns net
+	 use dns net ssh
 }
 
 chk_initd() {

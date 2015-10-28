@@ -24,26 +24,21 @@ RDEPEND=">=virtual/jre-1.6
 	sys-cluster/apache-hadoop-bin"
 
 S="${WORKDIR}/apache-${MY_P}-bin"
+INSTALL_DIR="/opt/${MY_PN}"
 
 src_install() {
-	insinto /usr/share/"${MY_PN}"
-	mv "${S}"/{bin,lib,scripts,examples} "${D}"/usr/share/"${MY_PN}" || die
+	insinto "${INSTALL_DIR}"
+	mv "${S}"/{bin,lib,scripts,examples} "${D}${INSTALL_DIR}"
+	chown -Rf root:hadoop "${D}${INSTALL_DIR}"
 
-	dosym /usr/share/"${MY_PN}"/bin/hive /usr/bin/hive
-	dosym /usr/share/"${MY_PN}"/bin/hive-config.sh /usr/bin/hive-config.sh
-	dosym /etc/"${MY_PN}" /usr/share/"${MY_PN}"/conf
+	cat > 99"${MY_PN}" <<EOF
+HIVE_HOME="${INSTALL_DIR}"
+PATH="${INSTALL_DIR}/bin"
+HIVE_CONF_DIR="/opt/hadoop"
+EOF
+	doenvd 99"${MY_PN}"
 
-	insinto /etc/"${MY_PN}"
-	#for c in conf/*; do
-	#	mv "${c}" "${c/.template/}" || die
-	#done
 	#sed -e 's/org.apache.hadoop.metrics.jvm.EventCounter/org.apache.hadoop.log.metrics.EventCounter/g' -i conf/*log4j.properties || die
-	doins conf/*
-
+	#doins conf/*
 	dodoc README.txt RELEASE_NOTES.txt
 }
-
-pkg_postinst() {
-	elog "For info on configuration see http://hadoop.apache.org/${MY_PN}/docs/r${PV}"
-}
-
