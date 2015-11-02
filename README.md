@@ -65,7 +65,8 @@ Verifications:
 ### Apache Hive (1.2.1)
 ~~~
 emerge dev-db/apache-bin-hive
-su - hdfs -c 'hadoop fs -mkdir /tmp/hive /user/hive/warehouse ; hadoop fs -chmod 733 /tmp/hive /user/hive/warehouse'
+su - hdfs -c 'hadoop fs -mkdir /tmp/hive /user/hive/warehouse'
+su - hdfs -c 'hadoop fs -chmod 733 /tmp/hive /user/hive/warehouse'
 ~~~
 Verifications:
 * Login as `hive`, unzip the above file excite.log.bz2 and copy it to HDFS (` hadoop fs -copyFromLocal excite.log`)
@@ -123,13 +124,14 @@ hive:hadoop
 ~~~
 * Directories created
 ~~~
-/etc/hadoop       # Hadoop config files
-/var/log/hadoop/  # Hadoop log files
-/var/tmp/hadoop/  # Hadoop tmp files including Process PIDs
 /opt/hadoop       # Hadoop binaries
+/etc/hadoop       # Hadoop config files (including Pig, Spark)
+/var/log/hadoop   # Hadoop log files
 /data/hdfs        # HDFS data files
-/usr/share/pig/   # Pig binaries
+/usr/share/pig    # Pig binaries
+/opt/hive         # Hive binaries
 /opt/spark        # Spark binaries
+
 ~~~
 * Environment files
 
@@ -161,6 +163,5 @@ mapred-site.xml
 ## To Do
 * Review the ebuilds code to align with best practices
 * Add the ebuild to the gentoo overlay repository (https://wiki.gentoo.org/wiki/Project:Overlays)
-
 
 
