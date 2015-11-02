@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
+EAPI="5"
 
-inherit eutils
+inherit user
 
 MY_PN="hive"
 MY_P="${MY_PN}-${PV}"
@@ -26,19 +26,23 @@ RDEPEND=">=virtual/jre-1.6
 S="${WORKDIR}/apache-${MY_P}-bin"
 INSTALL_DIR="/opt/${MY_PN}"
 
+pkg_setup(){
+	enewgroup hadoop
+	enewuser hive -1 /bin/bash /home/hive hadoop
+	chgrp hadoop /home/hive
+}
+
 src_install() {
 	insinto "${INSTALL_DIR}"
-	mv "${S}"/{bin,lib,scripts,examples} "${D}${INSTALL_DIR}"
+	mv "${S}"/{bin,lib,scripts,examples,conf} "${D}${INSTALL_DIR}"
 	chown -Rf root:hadoop "${D}${INSTALL_DIR}"
 
 	cat > 99"${MY_PN}" <<EOF
 HIVE_HOME="${INSTALL_DIR}"
-PATH="${INSTALL_DIR}/bin"
-HIVE_CONF_DIR="/opt/hadoop"
+HIVE_CONF_DIR="/etc/hadoop"
 EOF
 	doenvd 99"${MY_PN}"
 
 	#sed -e 's/org.apache.hadoop.metrics.jvm.EventCounter/org.apache.hadoop.log.metrics.EventCounter/g' -i conf/*log4j.properties || die
-	#doins conf/*
-	dodoc README.txt RELEASE_NOTES.txt
+	# dodoc README.txt RELEASE_NOTES.txt
 }

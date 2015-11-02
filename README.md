@@ -57,16 +57,25 @@ Verifications:
 emerge dev-lang/apache-pig-bin
 ~~~
 Verifications:
-* Login as `mapreduce`, download and extract the tutorial file `https://cwiki.apache.org/confluence/download/attachments/27822259/pigtutorial.tar.gz` 
-* Run Pig in local mode: `pig -x local script1-local.pig` from the extracted dir
+* Login as `mapred` (any Unix user can be used for Pig), download and extract the tutorial file `https://cwiki.apache.org/confluence/download/attachments/27822259/pigtutorial.tar.gz`
+* From the extracted dir, run `hadoop fs -copyFromLocal excite.log.bz2 .` (in case of failure create the HDFS dir `/user/mapred` with proper rights)
+* Run Pig in local mode: `pig -x local script1-local.pig` 
 * Run Pig in mapreduce mode: `pig script1-hadoop.pig`
 
 ### Apache Hive (1.2.1)
 ~~~
 emerge dev-db/apache-bin-hive
+su - hdfs -c 'hadoop fs -mkdir /tmp/hive /user/hive/warehouse ; hadoop fs -chmod 733 /tmp/hive /user/hive/warehouse'
 ~~~
 Verifications:
-*in progress*
+* Login as `hive` and run the Unix command `/opt/hive/bin/hive`, then enter following HQL lines (reusing the sample HDFS file excite.log.bz2 from above)
+~~~
+CREATE DATABASE test;
+USE test;
+CREATE EXTERNAL TABLE sample (username STRING, time INT, query STRING)  ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LOCATION '/user/mapred/excite.log.bz2';
+SELECT COUNT(*) FROM sample; -- will trigger a mapreduce job
+DROP DATABASE test;
+~~~
 
 ### Apache HBase (1.0.2)
 ~~~
@@ -106,6 +115,7 @@ su - cassandra nodetool status   # cluster status
 hdfs:hadoop
 yarn:hadoop
 mapred:hadoop
+hive:hadoop
 ~~~
 * Directories created
 ~~~
