@@ -68,12 +68,16 @@ emerge dev-db/apache-bin-hive
 su - hdfs -c 'hadoop fs -mkdir /tmp/hive /user/hive/warehouse ; hadoop fs -chmod 733 /tmp/hive /user/hive/warehouse'
 ~~~
 Verifications:
-* Login as `hive` and run the Unix command `/opt/hive/bin/hive`, then enter following HQL lines (reusing the sample HDFS file excite.log.bz2 from above)
+* Login as `hive`, unzip the above file excite.log.bz2 and copy it to HDFS (` hadoop fs -copyFromLocal excite.log`)
+* Run the Unix command `/opt/hive/bin/hive` then enter following HQL lines
 ~~~
 CREATE DATABASE test;
 USE test;
-CREATE EXTERNAL TABLE sample (username STRING, time INT, query STRING)  ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LOCATION '/user/mapred/excite.log.bz2';
-SELECT COUNT(*) FROM sample; -- will trigger a mapreduce job
+CREATE TABLE sample (userid STRING, time INT, query STRING)  ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
+LOAD DATA INPATH 'excite.log' OVERWRITE INTO TABLE sample;
+SELECT COUNT(*) FROM sample;
+-- this will run a mapreduce job that should return 944954
+DROP TABLE sample;
 DROP DATABASE test;
 ~~~
 
@@ -89,7 +93,7 @@ Verifications:
 emerge sys-cluster/apache-bin-spark
 ~~~
 Verifications:
-* Login as `mapred` and add a text file for instance `README.md`
+* Login as `mapred` and copy a text file for instance `README.md`
 * Run the following commands in PythonSpark (`pyspark`) and check results
 ~~~
 textFile = sc.textFile("README.md")
