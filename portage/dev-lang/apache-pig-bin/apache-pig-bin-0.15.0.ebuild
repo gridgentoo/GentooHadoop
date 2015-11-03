@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-EAPI="4"
+EAPI="5"
 
 inherit eutils
 
@@ -28,29 +28,19 @@ S="${WORKDIR}/${MY_P}"
 src_install() {
 	dobin bin/pig
 
-	insinto /usr/share/"${MY_PN}"
-	#doins "${MY_P}"-withouthadoop.jar
-	#newins "${MY_P}"-withouthadoop.jar "${MY_P}"-core.jar
-	mv "${S}"/{contrib,lib,scripts,src/packages/templates,test,*.jar} "${D}"/usr/share/"${MY_PN}" || die
+	insinto /opt/"${MY_PN}"
+	mv "${S}"/{contrib,lib,scripts,src/packages/templates,test,*.jar} "${D}"/opt/"${MY_PN}"
 
 	insinto /etc/"${MY_PN}"
 	doins conf/*
-
 	dosbin src/packages/*.sh
 
-        cat > 99"${MY_PN}" <<-EOF
-                PIG_HOME="/usr/share/${MY_PN}"
-                PIG_CLASSPATH="/opt/hadoop"
+	cat > 99pig <<-EOF
+PIG_HOME="/opt/pig"
+PIG_CLASSPATH="/opt/hadoop"
 EOF
-	[ `egrep -c "^[0-9].*#.* sandbox" /etc/hosts` -ne 0 ] && echo "PIG_HEAPSIZE=200" >> 99"${MY_PN}"
-        doenvd 99"${MY_PN}" || die "doenvd failed"
-
-	dodoc README.txt RELEASE_NOTES.txt CHANGES.txt
-	dohtml -r docs/*
+	[ `egrep -c "^[0-9].*#.* sandbox" /etc/hosts` -ne 0 ] && echo "PIG_HEAPSIZE=200" >> 99pig
+	doenvd 99pig
+	#dodoc README.txt RELEASE_NOTES.txt CHANGES.txt
+	#dohtml -r docs/*
 }
-
-pkg_postinst() {
-	elog "For info on configuration see http://hadoop.apache.org/${MY_PN}/docs/r${PV}"
-}
-
-

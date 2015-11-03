@@ -31,7 +31,7 @@ pkg_setup() {
 
 src_prepare() {
 	cd "${S}"
-	find . \( -name \*.bat -or -name \*.exe -or -name \*.dll \) -delete
+	find . \( -name \*.bat -or -name \*.exe -or -name \*.dll -or -name \*.ps1 \) -delete
 	rm bin/stop-server
 	rm lib/sigar-bin/*solaris* lib/sigar-bin/*ppc* lib/sigar-bin/*s390* lib/sigar-bin/*ia64* ib/sigar-bin/*freebsd*
 }

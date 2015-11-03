@@ -92,17 +92,23 @@ Verifications:
 ### Spark (1.5.0, hadoop based version)
 ~~~
 emerge sys-cluster/apache-bin-spark
+/etc/init.d/spark-master start
+/etc/init.d/spark-worker start # to be done on each cluster node
+
 ~~~
 Verifications:
-* Login as `mapred` and copy a text file for instance `README.md`
+* Check cluster status on http://<master>:7077/, you should see all workers there
+* Login as `spark` and copy a text file for instance `README.md`
 * Run the following commands in PythonSpark (`pyspark`) and check results
 ~~~
 textFile = sc.textFile("README.md")
 textFile.count()
 ~~~
+* Run a spark job (to be completed)
+
 
 ### Cassandra (2.2.1 latest)
-Note: cassandra has no dependency with Hadoop Common package and can be installed separately. The ebuild creates the user `cassandra:cassandra`, install the binaries in `/opt/cassandra` and use `/data/cassandra` so store DB files.
+Note: cassandra has no dependency with Hadoop Common package and can be installed separately. 
 
 To install cassandra in cluster mode just add the keyword `seed` in `/etc/hosts` for the seed(s)
 The sandbox option will reduce the memory settings to minimum (256MB)
@@ -121,6 +127,8 @@ hdfs:hadoop
 yarn:hadoop
 mapred:hadoop
 hive:hadoop
+spark:hadoop
+cassandra:cassandra
 ~~~
 * Directories created
 ~~~
@@ -128,9 +136,15 @@ hive:hadoop
 /etc/hadoop       # Hadoop config files (including Pig, Spark)
 /var/log/hadoop   # Hadoop log files
 /data/hdfs        # HDFS data files
-/usr/share/pig    # Pig binaries
+/opt/pig          # Pig binaries
 /opt/hive         # Hive binaries
 /opt/spark        # Spark binaries
+/etc/spark        # Spark config files
+/data/spark       # Spark working file
+/var/log/spark    # Spark logs
+/opt/cassandra    # Cassandra binaries
+/data/cassandra   # Cassandra DB files
+/var/log/cassandra # Cassandra log files
 
 ~~~
 * Environment files
@@ -162,6 +176,7 @@ mapred-site.xml
 
 ## To Do
 * Review the ebuilds code to align with best practices
+* handle the product versions in installations directories
 * Add the ebuild to the gentoo overlay repository (https://wiki.gentoo.org/wiki/Project:Overlays)
 
 

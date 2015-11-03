@@ -1,0 +1,42 @@
+For information about GNU Emacs and the GNU system, type C-h C-a.
+Setting up indent for shell type bash
+Indentation variables are now local.
+Indentation setup for shell type bash
+Setting up indent for shell type bash
+Indentation variables are now local.
+Indentation setup for shell type bash
+End of buffer
+Auto-saving...done
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/apache-spark-bin-1.5.0.ebuild...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/apache-spark-bin-1.5.0.ebuild
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/apache-spark-bin-1.5.0.ebuild...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/apache-spark-bin-1.5.0.ebuild
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/apache-spark-bin-1.5.0.ebuild...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/apache-spark-bin-1.5.0.ebuild
+Auto-saving...done
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd
+Auto-saving...done
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd
+Mark set [2 times]
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd
+Mark set [2 times]
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd
+Auto-saving...done
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd
+Auto-saving...done
+save-buffers-kill-emacs: Command attempted to use minibuffer while in minibuffer
+completing-read-default: Command attempted to use minibuffer while in minibuffer [2 times]
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/*Messages*
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/*Messages*...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/*Messages*
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/*Messages*...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/*Messages*
+Saving file /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd...
+Wrote /home/hadoop/gentoo-hadoop/portage/sys-cluster/apache-spark-bin/files/spark.initd
