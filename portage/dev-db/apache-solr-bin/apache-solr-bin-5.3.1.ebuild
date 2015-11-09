@@ -4,6 +4,8 @@
 
 EAPI=5
 
+inherit user
+
 MY_PN="solr"
 DESCRIPTION="Popular, blazing fast open source enterprise search platform from the Apache Lucene project"
 HOMEPAGE="http://lucene.apache.org/solr/"
@@ -14,33 +16,36 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
 
-
-DEPEND="app-arch/unzip"
+DEPEND="sys-process/lsof"
 RDEPEND="${DEPEND}"
 
-SOLR_HOME="/opt/solr"
+S="${WORKDIR}/${MY_PN}-${PV}"
+INSTALL_DIR="/opt/${MY_PN}"
+
+
+pkg_setup(){
+	enewgroup hadoop
+	enewuser solr -1 /bin/bash /home/solr hadoop
+#	chgrp hadoop /home/solr
+}
 
 
 src_install() {
-	dodir "${SOLR_HOME}"
-	dodir /etc/solr
+	sandbox=`egrep -c "^[0-9].*#.* sandbox" /etc/hosts`
 
-	unzip dist/"${P}.war" -d "${D}/${SOLR_HOME}" || die
-	sed -i -e 's@\.\./\.\./@\./@g' example/solr/conf/solrconfig.xml || die
-	rm -rf "${D}/${SOLR_HOME}"/META-INF  || die
+	insinto "${INSTALL_DIR}"
+	diropts -m770 -o root -g hadoop
+	dodir /var/log/"${MY_PN}"
 
-	insinto "${SOLR_HOME}"
-	doins -r dist
-	doins -r contrib
-	doins -r example/solr/conf
-	doins "${FILESDIR}"/solr.xml
+	#  update solr.in.sh
+	echo "SOLR_PID_DIR=/var/run/local" >> bin/solr.in.sh
+	echo "SOLR_LOGS_DIR=/var/log/${MY_PN}" >> bin/solr.in.sh
+	[ $sandbox -ne 0 ] && echo "SOLR_HEAP=200m" >> bin/solr.in.sh
 
-	dosym "${SOLR_HOME}"/conf /etc/solr/conf
-	dosym "${SOLR_HOME}"/WEB-INF/web.xml /etc/solr/web.xml
 
-	# jetty env
-#	insinto /opt/jetty/etc
-#	doins "${FILESDIR}"/jetty-solr.xml
-#	dosym "${SOLR_HOME}" /opt/jetty/webapps/solr
-#	dosym "${SOLR_HOME}"/solr.xml /opt/jetty/etc/solr.xml
+	mv "${S}"/* "${D}${INSTALL_DIR}"
+	chown -Rf root:hadoop "${D}${INSTALL_DIR}"
+
+	newinitd "${FILESDIR}/solr" solr
+
 }

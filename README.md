@@ -1,15 +1,15 @@
 # Gentoo Hadoop
-An up-to-date deployment process for Hadoop modules on Gentoo Linux. The ebuilds were collected from different repositories and updated to align with the latest software versions and the deployments modes described below
+An up-to-date deployment process for Hadoop ecosystem on Gentoo Linux. The ebuilds were collected from different repositories and updated to align with the latest software versions and the deployments modes described below
 
 ## Motivation
 
-The objective of this projet is to ease the installation and deployment of Hadoop modules on Gentoo Linux. It supports 2 deployment modes
+The objective of this projet is to ease the installation and deployment of Hadoop on Gentoo Linux. It supports 2 deployment modes
  1. Standard 
  2. Sandbox in single or multi-node cluster with minimal resource consumption (ability to run on small VMs with 1 core/2GB each)
 
 ## Installation
 ### Prequisites
-* Hadoop data file systems will be stored by default under `/data` directory. It is recommended to mount a dedicated partition on `/data` or at least to create the directory if it does not exists
+* Hadoop data file systems will be stored by default under `/data` directory. It is recommended to mount a dedicated partition on `/data` or at least to create the directory if it does not exists 
 * OPTIONAL. Specify the cluster topology in `/etc/hosts` by adding the module(s) supported by each server in comments. Also add the keyword `sandbox` to the namenode if you want a Sandbox deployment with minimal settings
 
 Example:
@@ -64,7 +64,7 @@ Verifications:
 
 ### Apache Hive (1.2.1)
 ~~~
-emerge dev-db/apache-bin-hive
+emerge dev-db/apache-hive-bin
 su - hdfs -c 'hadoop fs -mkdir /tmp/hive /user/hive/warehouse'
 su - hdfs -c 'hadoop fs -chmod 733 /tmp/hive /user/hive/warehouse'
 ~~~
@@ -84,14 +84,28 @@ DROP DATABASE test;
 
 ### Apache HBase (1.0.2)
 ~~~
-emerge dev-db/apache-bin-hbase
+emerge dev-db/apache-hbase-bin
+~~~
+Verifications:
+*in progress*
+
+### Apache Sqoop (1.4.6)
+~~~
+emerge sys-cluster/apache-sqoop-bin
+~~~
+Verifications:
+*in progress*
+
+### Apache Flume (1.6.0)
+~~~
+emerge sys-cluster/apache-flume-bin
 ~~~
 Verifications:
 *in progress*
 
 ### Spark (1.5.0, hadoop based version)
 ~~~
-emerge sys-cluster/apache-bin-spark
+emerge sys-cluster/apache-spark-bin
 /etc/init.d/spark-master start
 /etc/init.d/spark-worker start # to be done on each cluster node
 
@@ -107,8 +121,18 @@ textFile.count()
 * Run a spark job (to be completed)
 
 
+### Solr (5.3.1)
+~~~
+emerge dev-db/apache-solr-bin
+/etc/init.d/solr start
+rc-update add solr
+~~~
+Verifications:
+* Check status on http://<server>:8983/solr/
+
+
 ### Cassandra (2.2.1 latest)
-Note: cassandra has no dependency with Hadoop Common package and can be installed separately. 
+Note: cassandra has no dependency with Hadoop Common packages and can be installed separately. 
 
 To install cassandra in cluster mode just add the keyword `seed` in `/etc/hosts` for the seed(s)
 The sandbox option will reduce the memory settings to minimum (256MB)
@@ -120,6 +144,7 @@ su - cassandra nodetool status   # cluster status
 ~~~
 
 
+
 ## Environment Details
 * Users created
 ~~~
@@ -128,6 +153,7 @@ yarn:hadoop
 mapred:hadoop
 hive:hadoop
 spark:hadoop
+solr:hadoop
 cassandra:cassandra
 ~~~
 * Directories created
@@ -136,12 +162,16 @@ cassandra:cassandra
 /etc/hadoop       # Hadoop config files (including Pig, Spark)
 /var/log/hadoop   # Hadoop log files
 /data/hdfs        # HDFS data files
+
 /opt/pig          # Pig binaries
+
 /opt/hive         # Hive binaries
+
 /opt/spark        # Spark binaries
 /etc/spark        # Spark config files
 /data/spark       # Spark working file
 /var/log/spark    # Spark logs
+
 /opt/cassandra    # Cassandra binaries
 /data/cassandra   # Cassandra DB files
 /var/log/cassandra # Cassandra log files
