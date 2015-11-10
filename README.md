@@ -9,13 +9,14 @@ The objective of this projet is to ease the installation and deployment of Hadoo
 
 ## Installation
 ### Prequisites
+* Install MySQL for the Hive Metastore database (optionally update /etc/mysql/my.cnf) and create file /root/.my.cnf to allow direct connection from Unix user `root`
 * Hadoop data file systems will be stored by default under `/data` directory. It is recommended to mount a dedicated partition on `/data` or at least to create the directory if it does not exists 
-* OPTIONAL. Specify the cluster topology in `/etc/hosts` by adding the module(s) supported by each server in comments. Also add the keyword `sandbox` to the namenode if you want a Sandbox deployment with minimal settings
+* OPTIONAL. Specify the cluster topology in `/etc/hosts` by adding the module(s) supported by each server in the comments. Also add the keyword `sandbox` to each comment if you want a Sandbox deployment with minimal settings
 
 Example:
 ~~~
 192.168.56.11 hadoop1.mydomain.com hadoop1 # sandbox namenode datanode nodemanager resourcemanager
-192.168.56.12 hadoop2.mydomain.com hadoop2 # secondarynamenode datanode nodemanager historyserver
+192.168.56.12 hadoop2.mydomain.com hadoop2 # sandbox secondarynamenode datanode nodemanager historyserver
 ~~~
 
 * Copy manually the portage overlay directories to `/usr/local/portage/`
@@ -33,9 +34,9 @@ ebuild apache-hadoop-bin-2.7.1.ebuild digest
 emerge sys-cluster/apache-hadoop-bin
 su - hdfs -c 'hdfs namenode -format '  # format the namenode
 
-/etc/init.d/hadoop-namenode start      # start the namenode
+rc-service hadoop-namenode start       # start the namenode
 rc-update add hadoop-namenode          # add the namenode to boot
-/etc/init.d/hadoop-xxx start           # start module xxx 
+rc-service hadoop-xxx start            # start module xxx
 rc-update add hadoop-xxx               # add the module xxx to boot
 
 su - hdfs -c 'hadoop fs -mkdir /tmp ; hadoop fs -chmod 777 /tmp' # create the HDFS tmp dir
@@ -43,11 +44,11 @@ su - hdfs -c 'hadoop fs -mkdir /tmp ; hadoop fs -chmod 777 /tmp' # create the HD
 ~~~
 Ignore the emerge warnings `QA Notice..` on the Elf files
 
-This package will create the Unix users `hdfs`, `yarn` and `mapred` if they do not exist. Set the passwords for those users
+This package will create the Unix users `hdfs`, `yarn` and `mapred` (if they do not exist) . They are dedicated to run Hadoop servers and should not be used for something else.
 
 Verifications:
-* Login as `mapred` and add file to HDFS for instance `hadoop fs -put  /usr/portage/distfiles/hadoop-2.7.1.tar.gz  /`
-* Check NameNode status on http://<namenode>:50070/
+* Login as `hdfs` and add a big file to HDFS for instance `hadoop fs -put  /usr/portage/distfiles/hadoop-2.7.1.tar.gz  /`
+* Check NameNode status on http://<namenode>:50070/ especially the blocks replication
 * Check ResourceManager status on http://<resourcemanager>:8088/
 * Check HistoryServer status on http://<historyserver>:19888/
 * Install Pig and run a MapReduce Job
@@ -57,7 +58,7 @@ Verifications:
 emerge dev-lang/apache-pig-bin
 ~~~
 Verifications:
-* Login as `mapred` (any Unix user can be used for Pig), download and extract the tutorial file `https://cwiki.apache.org/confluence/download/attachments/27822259/pigtutorial.tar.gz`
+* Login as `mapred` (any Unix user can be used), download and extract the tutorial file `https://cwiki.apache.org/confluence/download/attachments/27822259/pigtutorial.tar.gz`
 * From the extracted dir, run `hadoop fs -copyFromLocal excite.log.bz2 .` (in case of failure create the HDFS dir `/user/mapred` with proper rights)
 * Run Pig in local mode: `pig -x local script1-local.pig` 
 * Run Pig in mapreduce mode: `pig script1-hadoop.pig`
@@ -69,17 +70,14 @@ su - hdfs -c 'hadoop fs -mkdir /tmp/hive /user/hive/warehouse'
 su - hdfs -c 'hadoop fs -chmod 733 /tmp/hive /user/hive/warehouse'
 ~~~
 Verifications:
-* Login as `hive`, unzip the above file excite.log.bz2 and copy it to HDFS (` hadoop fs -copyFromLocal excite.log`)
+* Login as `hive`, unzip the above file excite.log.bz2 and copy it to HDFS (`hadoop fs -copyFromLocal excite.log`)
 * Run the Unix command `/opt/hive/bin/hive` then enter following HQL lines
 ~~~
-CREATE DATABASE test;
-USE test;
-CREATE TABLE sample (userid STRING, time INT, query STRING)  ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
+CREATE TABLE sample (userid STRING, time INT, query STRING)  ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
 LOAD DATA INPATH 'excite.log' OVERWRITE INTO TABLE sample;
 SELECT COUNT(*) FROM sample;
 -- this will run a mapreduce job that should return 944954
 DROP TABLE sample;
-DROP DATABASE test;
 ~~~
 
 ### Apache HBase (1.0.2)
@@ -106,8 +104,8 @@ Verifications:
 ### Spark (1.5.0, hadoop based version)
 ~~~
 emerge sys-cluster/apache-spark-bin
-/etc/init.d/spark-master start
-/etc/init.d/spark-worker start # to be done on each cluster node
+rc-service spark-master start
+rc-service spark-worker start # to be done on each cluster node
 
 ~~~
 Verifications:
@@ -124,7 +122,7 @@ textFile.count()
 ### Solr (5.3.1)
 ~~~
 emerge dev-db/apache-solr-bin
-/etc/init.d/solr start
+rc-service solr start
 rc-update add solr
 ~~~
 Verifications:
@@ -138,7 +136,7 @@ To install cassandra in cluster mode just add the keyword `seed` in `/etc/hosts`
 The sandbox option will reduce the memory settings to minimum (256MB)
 ~~~
 emerge dev-db/apache-cassandra-bin
-/etc/init.d/cassandra start      # start the DB (to be done on all cluster nodes)
+rc-service cassandra start      # start the DB (to be done on all cluster nodes)
 rc-update add cassandra          # add to boot
 su - cassandra nodetool status   # cluster status
 ~~~
@@ -146,17 +144,17 @@ su - cassandra nodetool status   # cluster status
 
 
 ## Environment Details
-* Users created
+* Unix Users 
 ~~~
-hdfs:hadoop
-yarn:hadoop
-mapred:hadoop
-hive:hadoop
-spark:hadoop
-solr:hadoop
+hdfs:hadoop       # run HDFS Namenode and Data nodes
+yarn:hadoop       # run YARN servers
+mapred:hadoop     # run History Server
+hive:hadoop       # run Hive server?
+spark:hadoop      # run Spark server
+solr:hadoop       
 cassandra:cassandra
 ~~~
-* Directories created
+* Directories 
 ~~~
 /opt/hadoop       # Hadoop binaries
 /etc/hadoop       # Hadoop config files (including Pig, Spark)
