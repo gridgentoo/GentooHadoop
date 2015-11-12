@@ -64,12 +64,14 @@ src_install() {
 	sed -e "1iexport JAVA_HOME=${JAVA_HOME}" -i etc/hadoop/yarn-env.sh || die "sed failed"
 	sed -e "2iexport YARN_CONF_DIR=/etc/hadoop" -i etc/hadoop/yarn-env.sh
 	sed -e "3iexport YARN_LOG_DIR=/var/log/hadoop" -i etc/hadoop/yarn-env.sh
-	[ $sandbox -ne 0 ] && sed -e "4iexport YARN_HEAPSIZE=200" -i etc/hadoop/yarn-env.sh
+	sed -e "4iexport YARN_PID_DIR=/var/tmp/hadoop" -i etc/hadoop/yarn-env.sh
+	[ $sandbox -ne 0 ] && sed -e "5iexport YARN_HEAPSIZE=200" -i etc/hadoop/yarn-env.sh
 
 	# mapred-env.sh
 	sed -e "1iexport JAVA_HOME=${JAVA_HOME}" -i etc/hadoop/mapred-env.sh || die "sed failed"
 	sed -e "2iexport HADOOP_MAPRED_LOG_DIR=/var/log/hadoop" -i etc/hadoop/mapred-env.sh
-	[ $sandbox -ne 0 ] && sed -e "22iexport HADOOP_JOB_HISTORYSERVER_HEAPSIZE=100" -i etc/hadoop/mapred-env.sh
+	sed -e "3iexport HADOOP_MAPRED_PID_DIR=/var/tmp/hadoop" -i etc/hadoop/mapred-env.sh
+	[ $sandbox -ne 0 ] && sed -e "23iexport HADOOP_JOB_HISTORYSERVER_HEAPSIZE=100" -i etc/hadoop/mapred-env.sh
 
 	# Update core-site.xml
 	sed -e "20i<property><name>fs.defaultFS</name><value>hdfs://$namenode</value></property>" -i etc/hadoop/core-site.xml || die "sed failed"
@@ -87,7 +89,7 @@ src_install() {
 	   sed -e "20i<property><name>yarn.scheduler.minimum-allocation-mb</name><value>100</value></property>" -i etc/hadoop/yarn-site.xml
 	   sed -e "20i<property><name>yarn.scheduler.maximum-allocation-mb</name><value>100</value></property>" -i etc/hadoop/yarn-site.xml
 	   sed -e "20i<property><name>yarn.nodemanager.resource.memory-mb</name><value>200</value></property>" -i etc/hadoop/yarn-site.xml
-           sed -e "20i<property><name>yarn.scheduler.maximum-allocation-vcores</name><value>1</value></property>" -i etc/hadoop/yarn-site.xml
+		   sed -e "20i<property><name>yarn.scheduler.maximum-allocation-vcores</name><value>1</value></property>" -i etc/hadoop/yarn-site.xml
 	fi
 
 	# Update mapred-site.xml
@@ -127,7 +129,7 @@ src_install() {
 	# init scripts
 	newinitd "${FILESDIR}"/"${MY_PN}".initd "${MY_PN}.initd"
 	for i in "namenode" "datanode" "secondarynamenode" "resourcemanager" "nodemanager" "historyserver"
-    	do if [ `egrep -c "^[0-9].*#.*namenode" /etc/hosts` -eq 0 ] || [ `egrep -c "^[0-9].*${hostname}.*#.* ${i}" /etc/hosts` -eq 1 ] ; then
+		do if [ `egrep -c "^[0-9].*#.*namenode" /etc/hosts` -eq 0 ] || [ `egrep -c "^[0-9].*${hostname}.*#.* ${i}" /etc/hosts` -eq 1 ] ; then
 	   dosym  /etc/init.d/"${MY_PN}.initd" /etc/init.d/"${MY_PN}"-"${i}"
 	   fi
 	done
