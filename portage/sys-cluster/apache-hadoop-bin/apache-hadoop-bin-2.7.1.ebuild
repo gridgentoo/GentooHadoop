@@ -55,8 +55,8 @@ src_install() {
 	# The hadoop-env.sh file needs JAVA_HOME set explicitly
 	JAVA_HOME=$(java-config -g JAVA_HOME)
 	sed -e "1iexport JAVA_HOME=${JAVA_HOME}" -i etc/hadoop/hadoop-env.sh || die "sed failed"
-	# Also set the Log and PID dir
-	sed -e "2iexport HADOOP_PID_DIR=/var/tmp/hadoop" -i etc/hadoop/hadoop-env.sh
+	# Also set the Log and PID dirs
+	sed -e "2iexport HADOOP_PID_DIR=/var/run/pids" -i etc/hadoop/hadoop-env.sh
 	sed -e "3iexport HADOOP_LOG_DIR=/var/log/hadoop" -i etc/hadoop/hadoop-env.sh
 	[ $sandbox -ne 0 ] && sed -e "4iexport HADOOP_HEAPSIZE=200" -i etc/hadoop/hadoop-env.sh
 
@@ -64,20 +64,20 @@ src_install() {
 	sed -e "1iexport JAVA_HOME=${JAVA_HOME}" -i etc/hadoop/yarn-env.sh || die "sed failed"
 	sed -e "2iexport YARN_CONF_DIR=/etc/hadoop" -i etc/hadoop/yarn-env.sh
 	sed -e "3iexport YARN_LOG_DIR=/var/log/hadoop" -i etc/hadoop/yarn-env.sh
-	sed -e "4iexport YARN_PID_DIR=/var/tmp/hadoop" -i etc/hadoop/yarn-env.sh
+	sed -e "4iexport YARN_PID_DIR=/var/run/pids" -i etc/hadoop/yarn-env.sh
 	[ $sandbox -ne 0 ] && sed -e "5iexport YARN_HEAPSIZE=200" -i etc/hadoop/yarn-env.sh
 
 	# mapred-env.sh
 	sed -e "1iexport JAVA_HOME=${JAVA_HOME}" -i etc/hadoop/mapred-env.sh || die "sed failed"
 	sed -e "2iexport HADOOP_MAPRED_LOG_DIR=/var/log/hadoop" -i etc/hadoop/mapred-env.sh
-	sed -e "3iexport HADOOP_MAPRED_PID_DIR=/var/tmp/hadoop" -i etc/hadoop/mapred-env.sh
+	sed -e "3iexport HADOOP_MAPRED_PID_DIR=/var/run/pids" -i etc/hadoop/mapred-env.sh
 	[ $sandbox -ne 0 ] && sed -e "23iexport HADOOP_JOB_HISTORYSERVER_HEAPSIZE=100" -i etc/hadoop/mapred-env.sh
 
 	# Update core-site.xml
 	sed -e "20i<property><name>fs.defaultFS</name><value>hdfs://$namenode</value></property>" -i etc/hadoop/core-site.xml || die "sed failed"
 	# Update hdfs-site.xml
-	sed -e "21i<property><name>dfs.namenode.name.dir</name><value>file:/data/hdfs/name</value></property>" -i etc/hadoop/hdfs-site.xml
-	sed -e "22i<property><name>dfs.datanode.data.dir</name><value>file:/data/hdfs/data</value></property>" -i etc/hadoop/hdfs-site.xml
+	sed -e "21i<property><name>dfs.namenode.name.dir</name><value>file:/var/lib/hdfs/name</value></property>" -i etc/hadoop/hdfs-site.xml
+	sed -e "22i<property><name>dfs.datanode.data.dir</name><value>file:/var/lib/hdfs/data</value></property>" -i etc/hadoop/hdfs-site.xml
 	sed -e "23i<property><name>dfs.namenode.secondary.http-address</name><value>hdfs://${secondarynamenode}:50090</value></property>" -i etc/hadoop/hdfs-site.xml
 	[ $replication -ne 0 ]  && sed -e "24i<property><name>dfs.replication</name><value>$replication</value></property>" -i etc/hadoop/hdfs-site.xml
 	[ $sandbox -ne 0 ] && sed -e "24i<property><name>dfs.blocksize</name><value>10M</value></property>" -i etc/hadoop/hdfs-site.xml
@@ -104,9 +104,8 @@ src_install() {
 
 	# make useful dirs
 	diropts -m770 -o root -g hadoop
-	dodir /var/log/"${MY_PN}"
-	dodir /var/tmp/"${MY_PN}"
-	dodir /data/hdfs
+	dodir /var/log/hadoop
+	dodir /var/lib/hdfs
 
 	# install dir
 	dodir "${INSTALL_DIR}"
@@ -127,14 +126,10 @@ src_install() {
 	dosym ${INSTALL_DIR}/etc/hadoop /etc/hadoop
 
 	# init scripts
-	newinitd "${FILESDIR}"/"${MY_PN}".initd "${MY_PN}.initd"
+	newinitd "${FILESDIR}"/hadoop.initd hadoop.initd
 	for i in "namenode" "datanode" "secondarynamenode" "resourcemanager" "nodemanager" "historyserver"
 		do if [ `egrep -c "^[0-9].*#.*namenode" /etc/hosts` -eq 0 ] || [ `egrep -c "^[0-9].*${hostname}.*#.* ${i}" /etc/hosts` -eq 1 ] ; then
-	   dosym  /etc/init.d/"${MY_PN}.initd" /etc/init.d/"${MY_PN}"-"${i}"
+	   dosym  /etc/init.d/hadoop.initd /etc/init.d/hadoop-"${i}"
 	   fi
 	done
-}
-
-pkg_postinst() {
-	elog "For info on configuration see http://hadoop.apache.org/core/docs/r${PV}"
 }

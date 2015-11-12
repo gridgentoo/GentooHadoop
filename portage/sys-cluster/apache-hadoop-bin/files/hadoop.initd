@@ -4,38 +4,29 @@
 # $Header: $
 
 DAEMON=${SVCNAME/hadoop-}
+[ /var/run/pids ] || mkdir -m=777 /var/run/pids
 
 depend() {
 	 use dns net ssh
 }
 
-chk_initd() {
-	if [ "${DAEMON}" == "${SVCNAME}" ]; then
-		eerror "You should not run this init script, use the provided aliases"
-		eend 1
-		return 1
-	fi
-}
-
 init_env_vars() {
-	# . /etc/hadoop/hadoop-env.sh
 	if [ "${DAEMON}" == "namenode" ] || [ "${DAEMON}" == "secondarynamenode" ] || [ "${DAEMON}" == "datanode" ]; then
 	   DN_USER="hdfs"
 	   DN_CMD="hadoop-daemon.sh"
-	   PID_FILE="/var/tmp/hadoop/hadoop-hdfs-${DAEMON}.pid"
+	   PID_FILE="/var/run/pids/hadoop-hdfs-${DAEMON}.pid"
 	elif [ "${DAEMON}" == "resourcemanager" ] || [ "${DAEMON}" == "nodemanager" ] ; then
 	   DN_USER="yarn"
 	   DN_CMD="yarn-daemon.sh"
-	   PID_FILE="/var/tmp/hadoop/yarn-yarn-${DAEMON}.pid"
+	   PID_FILE="/var/run/pids/yarn-yarn-${DAEMON}.pid"
 	else
 	   DN_USER="mapred"
 	   DN_CMD="mr-jobhistory-daemon.sh"
-	   PID_FILE="/var/tmp/hadoop/mapred-mapred-historyserver.pid"
+	   PID_FILE="/var/run/pids/mapred-mapred-historyserver.pid"
 	fi
 }
 
 start() {
-	chk_initd || exit 1
 	ebegin "Starting Apache Hadoop ${DAEMON} "
 	init_env_vars
 	start-stop-daemon --start --quiet --pidfile $PID_FILE  \
@@ -44,7 +35,6 @@ start() {
 }
 
 stop() {
-	chk_initd || exit 1
 	ebegin "Stopping Apache Hadoop ${DAEMON}"
 	init_env_vars
 	start-stop-daemon --stop --quiet --pidfile $PID_FILE
