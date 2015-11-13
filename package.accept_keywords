@@ -1,0 +1,10 @@
+# required by Hadoop
+sys-cluster/apache-hadoop-bin ~amd64
+sys-cluster/apache-sqoop-bin ~amd64
+sys-cluster/apache-flume-bin ~amd64
+sys-cluster/apache-spark-bin ~amd64
+dev-lang/apache-pig-bin ~amd64
+dev-db/apache-hive-bin ~amd64
+dev-db/apache-hbase-bin ~amd64
+dev-db/apache-solr-bin ~amd64
+dev-db/apache-cassandra-bin ~amd64

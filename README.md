@@ -87,7 +87,7 @@ emerge dev-db/apache-hbase-bin
 Verifications:
 *in progress*
 
-### Apache Sqoop (1.4.6)
+### Apache Sqoop (1.99.6)
 ~~~
 emerge sys-cluster/apache-sqoop-bin
 ~~~
