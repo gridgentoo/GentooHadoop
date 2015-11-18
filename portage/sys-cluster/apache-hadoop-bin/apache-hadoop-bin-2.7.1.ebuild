@@ -1,106 +1,202 @@
-# Copyright 1999-2010 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
-EAPI="2"
-inherit user java-utils-2
+EAPI="5"
+inherit user
 
 MY_PN="hadoop"
 MY_P="${MY_PN}-${PV}"
 
 DESCRIPTION="Software framework for data intensive distributed applications"
 HOMEPAGE="http://hadoop.apache.org/"
-SRC_URI="mirror://apache/hadoop/common/hadoop-${PV}/hadoop-${PV}.tar.gz"
-
+SRC_URI="mirror://apache/hadoop/common/${MY_P}/${MY_P}.tar.gz"
 
 LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-RESTRICT="mirror binchecks"
-IUSE=""
 
 DEPEND=""
-RDEPEND=">=virtual/jre-1.6
-	net-misc/openssh
-	net-misc/rsync"
+RDEPEND="virtual/jre
+net-misc/openssh"
 
-S=${WORKDIR}/hadoop-${PV}
-INSTALL_DIR=/opt/hadoop
-export CONFIG_PROTECT="${CONFIG_PROTECT} ${INSTALL_DIR}/etc/hadoop"
+S=${WORKDIR}/${MY_P}
+INSTALL_DIR=/opt/${MY_P}
 
 pkg_setup(){
 	enewgroup hadoop
 	enewuser hdfs -1 /bin/bash /home/hdfs hadoop
 	enewuser yarn -1 /bin/bash /home/yarn hadoop
 	enewuser mapred -1 /bin/bash /home/mapred hadoop
-	chgrp hadoop /home/yarn /home/mapred /home/hdfs
 }
 
 src_install() {
-	# get the topology from /etc/hosts
+	# get the cluster topology from /etc/hosts
 	hostname=`uname -n`
 	namenode=`egrep "^[0-9].*#.* namenode" /etc/hosts | awk '{print $2}' `
 	[[ -n $namenode ]] || namenode=$hostname
-	secondarynamenode=`egrep "^[0-9].*#.* secondarynamenode" /etc/hosts | awk '{print $2}'`
-	[[ -n $secondarynamenode ]] || secondarynamenode=$hostname
-	resourcemanager=`egrep "^[0-9].*#.* resourcemanager" /etc/hosts | awk '{print $2}'`
-	[[ -n $resourcemanager ]] || resourcemanager=$hostname
-	historyserver=`egrep "^[0-9].*#.* historyserver" /etc/hosts | awk '{print $2}'`
-	[[ -n $historyserver ]] || historyserver=$hostname
+	secondary=`egrep "^[0-9].*#.* secondaryname" /etc/hosts | awk '{print $2}'`
+	[[ -n $secondary ]] || secondary=$hostname
+	resmgr=`egrep "^[0-9].*#.* resourcemanager" /etc/hosts | awk '{print $2}'`
+	[[ -n $resmgr ]] || resmgr=$hostname
+	histsrv=`egrep "^[0-9].*#.* historyserver" /etc/hosts | awk '{print $2}'`
+	[[ -n $histsrv ]] || histsrv=$hostname
 
-	replication=`egrep -c "^[0-9].*#.* datanode" /etc/hosts`
-	[ $replication -ge 3 ] && replication=0
 	sandbox=`egrep -c "^[0-9].*#.* sandbox" /etc/hosts`
+	replication=`egrep -c "^[0-9].*#.* datanode" /etc/hosts`
+	[ $replication -gt 3 ] && replication=3
+	if [ $replication -eq 0 ]; then
+		if [ $sandbox -ne 0 ]; then
+			replication=1
+		else replication=3
+		fi
+	fi
+	javaheap=1024
+	[ $sandbox -ne 0 ] && javaheap=128
 
-	# The hadoop-env.sh file needs JAVA_HOME set explicitly
-	JAVA_HOME=$(java-config -g JAVA_HOME)
-	sed -e "1iexport JAVA_HOME=${JAVA_HOME}" -i etc/hadoop/hadoop-env.sh || die "sed failed"
-	# Also set the Log and PID dirs
-	sed -e "2iexport HADOOP_PID_DIR=/var/run/pids" -i etc/hadoop/hadoop-env.sh
-	sed -e "3iexport HADOOP_LOG_DIR=/var/log/hadoop" -i etc/hadoop/hadoop-env.sh
-	[ $sandbox -ne 0 ] && sed -e "4iexport HADOOP_HEAPSIZE=200" -i etc/hadoop/hadoop-env.sh
+	# hadoop-env.sh
+	cat >tmpfile<<EOF
+export JAVA_HOME=$(java-config -g JAVA_HOME)
+export HADOOP_PID_DIR=/var/run/pids
+export HADOOP_LOG_DIR=/var/log/hadoop
+export HADOOP_HEAPSIZE=$javaheap
+EOF
+	sed -i '/# Set Hadoop-specific/r tmpfile' etc/hadoop/hadoop-env.sh || die
 
 	# yarn-env.sh
-	sed -e "1iexport JAVA_HOME=${JAVA_HOME}" -i etc/hadoop/yarn-env.sh || die "sed failed"
-	sed -e "2iexport YARN_CONF_DIR=/etc/hadoop" -i etc/hadoop/yarn-env.sh
-	sed -e "3iexport YARN_LOG_DIR=/var/log/hadoop" -i etc/hadoop/yarn-env.sh
-	sed -e "4iexport YARN_PID_DIR=/var/run/pids" -i etc/hadoop/yarn-env.sh
-	[ $sandbox -ne 0 ] && sed -e "5iexport YARN_HEAPSIZE=200" -i etc/hadoop/yarn-env.sh
+	cat >tmpfile<<EOF
+export JAVA_HOME=$(java-config -g JAVA_HOME)
+export YARN_CONF_DIR=/etc/hadoop
+export YARN_LOG_DIR=/var/log/hadoop
+export YARN_PID_DIR=/var/run/pids
+export YARN_HEAPSIZE=$javaheap
+EOF
+	sed -i "/# limitations under the/r tmpfile"  etc/hadoop/yarn-env.sh || die
 
 	# mapred-env.sh
-	sed -e "1iexport JAVA_HOME=${JAVA_HOME}" -i etc/hadoop/mapred-env.sh || die "sed failed"
-	sed -e "2iexport HADOOP_MAPRED_LOG_DIR=/var/log/hadoop" -i etc/hadoop/mapred-env.sh
-	sed -e "3iexport HADOOP_MAPRED_PID_DIR=/var/run/pids" -i etc/hadoop/mapred-env.sh
-	[ $sandbox -ne 0 ] && sed -e "23iexport HADOOP_JOB_HISTORYSERVER_HEAPSIZE=100" -i etc/hadoop/mapred-env.sh
+	cat >tmpfile<<EOF
+export JAVA_HOME=$(java-config -g JAVA_HOME)
+export HADOOP_MAPRED_LOG_DIR=/var/log/hadoop
+export HADOOP_MAPRED_PID_DIR=/var/run/pids
+export HADOOP_JOB_HISTORYSERVER_HEAPSIZE=$javaheap
+EOF
+	cat tmpfile >>etc/hadoop/mapred-env.sh || die
 
-	# Update core-site.xml
-	sed -e "20i<property><name>fs.defaultFS</name><value>hdfs://$namenode</value></property>" -i etc/hadoop/core-site.xml || die "sed failed"
-	# Update hdfs-site.xml
-	sed -e "21i<property><name>dfs.namenode.name.dir</name><value>file:/var/lib/hdfs/name</value></property>" -i etc/hadoop/hdfs-site.xml
-	sed -e "22i<property><name>dfs.datanode.data.dir</name><value>file:/var/lib/hdfs/data</value></property>" -i etc/hadoop/hdfs-site.xml
-	sed -e "23i<property><name>dfs.namenode.secondary.http-address</name><value>hdfs://${secondarynamenode}:50090</value></property>" -i etc/hadoop/hdfs-site.xml
-	[ $replication -ne 0 ]  && sed -e "24i<property><name>dfs.replication</name><value>$replication</value></property>" -i etc/hadoop/hdfs-site.xml
-	[ $sandbox -ne 0 ] && sed -e "24i<property><name>dfs.blocksize</name><value>10M</value></property>" -i etc/hadoop/hdfs-site.xml
-
-	# Update yarn-site.xml
-	sed -e "18i<property><name>yarn.nodemanager.aux-services</name><value>mapreduce_shuffle</value></property>" -i etc/hadoop/yarn-site.xml || die "sed failed"
-	sed -e "19i<property><name>yarn.resourcemanager.hostname</name><value>$resourcemanager</value></property>" -i etc/hadoop/yarn-site.xml
-	if [ $sandbox -ne 0 ] ; then
-	   sed -e "20i<property><name>yarn.scheduler.minimum-allocation-mb</name><value>100</value></property>" -i etc/hadoop/yarn-site.xml
-	   sed -e "20i<property><name>yarn.scheduler.maximum-allocation-mb</name><value>100</value></property>" -i etc/hadoop/yarn-site.xml
-	   sed -e "20i<property><name>yarn.nodemanager.resource.memory-mb</name><value>200</value></property>" -i etc/hadoop/yarn-site.xml
-		   sed -e "20i<property><name>yarn.scheduler.maximum-allocation-vcores</name><value>1</value></property>" -i etc/hadoop/yarn-site.xml
+	# core-site.xml
+	cat >tmpfile<<EOF
+<property>
+  <name>fs.defaultFS</name>
+  <value>hdfs://$namenode</value>
+</property>
+<property>
+  <name>dfs.namenode.name.dir</name>
+  <value>file:/var/lib/hdfs/name</value>
+</property>
+<property>
+  <name>dfs.datanode.data.dir</name>
+  <value>file:/var/lib/hdfs/data</value>
+</property>
+<property>
+  <name>dfs.namenode.secondary.http-address</name>
+  <value>hdfs://${secondary}:50090</value>
+</property>
+<property>
+  <name>dfs.replication</name>
+  <value>$replication</value>
+</property>
+<property>
+  <name>dfs.permissions.superusergroup</name>
+  <value>hadoop</value>
+</property>
+EOF
+	if [ $sandbox -ne 0 ] ; then cat >>tmpfile<<EOF
+<property>
+  <name>dfs.blocksize</name>
+  <value>10M</value>
+</property>
+EOF
 	fi
+	sed -i '/<configuration>/r tmpfile' etc/hadoop/hdfs-site.xml ||die
 
-	# Update mapred-site.xml
-	[ -f etc/hadoop/mapred-site.xml ] || cp etc/hadoop/mapred-site.xml.template etc/hadoop/mapred-site.xml
-	sed -e "20i<property><name>mapreduce.framework.name</name><value>yarn</value></property>" -i etc/hadoop/mapred-site.xml || die "sed failed"
-	sed -e "21i<property><name>mapreduce.jobhistory.address</name><value>$historyserver:10020</value></property>" -i etc/hadoop/mapred-site.xml
-	if [ $sandbox -ne 0 ] ; then
-	   sed -e "20i<property><name>mapreduce.map.memory.mb</name><value>100</value></property>" -i etc/hadoop/mapred-site.xml
-	   sed -e "20i<property><name>mapreduce.reduce.memory.mb</name><value>100</value></property>" -i etc/hadoop/mapred-site.xml
-	   sed -e "20i<property><name>yarn.app.mapreduce.am.resource.mb</name><value>100</value></property>" -i etc/hadoop/mapred-site.xml
+	# yarn-site.xml
+	cat >tmpfile<<EOF
+<property>
+  <name>yarn.nodemanager.aux-services</name>
+  <value>mapreduce_shuffle</value>
+</property>
+<property>
+  <name>yarn.resourcemanager.hostname</name>
+  <value>$resmgr</value>
+</property>
+EOF
+	if [ $sandbox -ne 0 ] ; then cat >>tmpfile<<EOF
+<property>
+  <name>yarn.nodemanager.resource.memory-mb</name>
+  <value>576</value>
+</property>
+<property>
+  <name>yarn.nodemanager.resource.cpu-vcores</name>
+  <value>1</value>
+</property>
+<property>
+  <name>yarn.scheduler.minimum-allocation-mb</name>
+  <value>96</value>
+</property>
+<property>
+  <name>yarn.scheduler.maximum-allocation-mb</name>
+  <value>192</value>
+</property>
+<property>
+  <name>yarn.nodemanager.vmem-pmem-ratio</name>
+  <value>1</value>
+</property>
+EOF
 	fi
+	sed -i '/<configuration>/r tmpfile' etc/hadoop/yarn-site.xml || die
+
+	# mapred-site.xml
+	[ -f etc/hadoop/mapred-site.xml ] \
+		|| cp etc/hadoop/mapred-site.xml.template etc/hadoop/mapred-site.xml
+	cat >tmpfile<<EOF
+<property>
+  <name>mapreduce.framework.name</name>
+  <value>yarn</value>
+</property>
+<property>
+  <name>mapreduce.jobhistory.address</name>
+  <value>$histsrv:10020</value>
+</property>
+EOF
+	if [ $sandbox -ne 0 ] ; then cat >>tmpfile<<EOF
+<property>
+  <name>yarn.app.mapreduce.am.resource.mb</name>
+  <value>192</value>
+</property>
+<property>
+  <name>yarn.app.mapreduce.am.command-opts</name>
+  <value>-Xmx128m</value>
+</property>
+
+<property>
+  <name>mapreduce.map.memory.mb</name>
+  <value>192</value>
+</property>
+<property>
+  <name>mapreduce.map.java.opts</name>
+  <value>-Xmx128m</value>
+</property>
+
+<property>
+  <name>mapreduce.reduce.memory.mb</name>
+  <value>192</value>
+</property>
+<property>
+  <name>mapreduce.reduce.java.opts</name>
+  <value>-Xmx128m</value>
+</property>
+EOF
+	fi
+	sed -i '/<configuration>/r tmpfile' etc/hadoop/mapred-site.xml || die
 
 	# make useful dirs
 	diropts -m770 -o root -g hadoop
@@ -109,27 +205,31 @@ src_install() {
 
 	# install dir
 	dodir "${INSTALL_DIR}"
-	mv "${S}"/* "${D}${INSTALL_DIR}" || die "install failed"
-	chown -Rf root:hadoop "${D}${INSTALL_DIR}"
+	rm -f */*.cmd
+	fperms g+w etc/hadoop/*
+	mv "${S}"/* "${D}${INSTALL_DIR}"
+	fowners -Rf root:hadoop "${INSTALL_DIR}"
 
 	# env file
-	cat > 99hadoop <<-EOF
-		HADOOP_HOME="${INSTALL_DIR}"
-		HADOOP_YARN_HOME="${INSTALL_DIR}"
-		HADOOP_MAPRED_HOME="${INSTALL_DIR}"
-		PATH="${INSTALL_DIR}/bin"
-		CONFIG_PROTECT="${INSTALL_DIR}/etc/hadoop"
-	EOF
-	doenvd 99hadoop || die "doenvd failed"
+	cat > 99hadoop <<EOF
+HADOOP_HOME="${INSTALL_DIR}"
+HADOOP_YARN_HOME="${INSTALL_DIR}"
+HADOOP_MAPRED_HOME="${INSTALL_DIR}"
+PATH="${INSTALL_DIR}/bin"
+CONFIG_PROTECT="${INSTALL_DIR}/etc/hadoop"
+EOF
+	doenvd 99hadoop
 
 	# conf symlink
 	dosym ${INSTALL_DIR}/etc/hadoop /etc/hadoop
 
 	# init scripts
-	newinitd "${FILESDIR}"/hadoop.initd hadoop.initd
+	newinitd "${FILESDIR}"/hadoop.init hadoop.init
 	for i in "namenode" "datanode" "secondarynamenode" "resourcemanager" "nodemanager" "historyserver"
 		do if [ `egrep -c "^[0-9].*#.*namenode" /etc/hosts` -eq 0 ] || [ `egrep -c "^[0-9].*${hostname}.*#.* ${i}" /etc/hosts` -eq 1 ] ; then
-	   dosym  /etc/init.d/hadoop.initd /etc/init.d/hadoop-"${i}"
+	   dosym  /etc/init.d/hadoop.init /etc/init.d/hadoop-"${i}"
 	   fi
 	done
+	# opt synlink
+	dosym "${INSTALL_DIR}" "/opt/${MY_PN}"
 }

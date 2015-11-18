@@ -3,67 +3,111 @@ An up-to-date deployment process for Hadoop ecosystem on Gentoo Linux. The ebuil
 
 ## Motivation
 
-The objective of this projet is to ease the installation and deployment of Hadoop on Gentoo Linux. It supports 2 deployment modes
+The objective of this projet is to ease the installation and deployment of Hadoop components on Gentoo Linux. It supports 2 deployment modes
  1. Standard 
- 2. Sandbox in single or multi-node cluster with minimal resource consumption (ability to run on small VMs with 1 core/2GB each)
+ 2. Sandbox in a single or multi-node cluster with minimal resource consumption (ability to run on small VMs with 1 core/2GB each)
 
-## Installation
-### Prequisites
-* Install MySQL for the Hive Metastore database (optionally update /etc/mysql/my.cnf) and create file /root/.my.cnf to allow direct connection from Unix user `root`
-* Hadoop data file systems will be stored by default under `/data` directory. It is recommended to mount a dedicated partition on `/data` or at least to create the directory if it does not exists 
-* OPTIONAL. Specify the cluster topology in `/etc/hosts` by adding the module(s) supported by each server in the comments. Also add the keyword `sandbox` to each comment if you want a Sandbox deployment with minimal settings
+## Installation Prequisites
+* Copy manually the portage overlay directories to `/usr/local/portage/` for instance
+* Update `/etc/portage/package.accept_keywords` with the included file
+* Digest the ebuilds
+~~~
+find /usr/local/portage/ -name *.ebuild -exec ebuild {} digest \;
+~~~
+(this is a temporary solution until use of Gentoo overlay)
 
+## Installation Rules
+* A Unix user is created for each type of servers especially `hdfs`, `yarn`, etc.
+* The binaries are installed in /opt/<component>-<version>/
+* The configuration files are setup /etc/<component>/
+* The log files can be found in /var/log/<component>/
+* The PID files are stored in /var/run/pids/
+* The data files are stored in /var/lib
+
+## Components
+
+### Apache Hadoop Common (2.7.1)
+*Preparation*
+* (optional) Specify the cluster topology in `/etc/hosts` by adding the server(s) supported by each host in the comments. Also add the keyword `sandbox` to each line if you want a Sandbox deployment with minimal settings. 
 Example:
 ~~~
 192.168.56.11 hadoop1.mydomain.com hadoop1 # sandbox namenode datanode nodemanager resourcemanager
 192.168.56.12 hadoop2.mydomain.com hadoop2 # sandbox secondarynamenode datanode nodemanager historyserver
 ~~~
+If not done, installation will assume a single-node cluster 
 
-* Copy manually the portage overlay directories to `/usr/local/portage/`
-* Digest the ebuilds, example:
-~~~
-cd /usr/local/portage/sys-cluster/apache-hadoop-bin
-ebuild apache-hadoop-bin-2.7.1.ebuild digest
-~~~
-* Add to `/etc/portage/package.accept_keywords` upon request
-
-(this is a temporary solution until use of Gentoo overlay)
-
-### Apache Hadoop Common (2.7.1)
+*Installation*
 ~~~
 emerge sys-cluster/apache-hadoop-bin
-su - hdfs -c 'hdfs namenode -format '  # format the namenode
-
+su - hdfs -c 'hdfs namenode -format'   # format the namenode
 rc-service hadoop-namenode start       # start the namenode
-rc-update add hadoop-namenode          # add the namenode to boot
-rc-service hadoop-xxx start            # start module xxx
-rc-update add hadoop-xxx               # add the module xxx to boot
-
-su - hdfs -c 'hadoop fs -mkdir /tmp ; hadoop fs -chmod 777 /tmp' # create the HDFS tmp dir
-
+rc-service hadoop-datanode start       # start the datanode
+su - hdfs -c 'hadoop fs -mkdir -p /tmp/hadoop-yarn ; hadoop fs -chmod 777 /tmp/hadoop-yarn' # create TMP dir
+rc-service hadoop-xxxx start            # start module xxx
 ~~~
-Ignore the emerge warnings `QA Notice..` on the Elf files
 
-This package will create the Unix users `hdfs`, `yarn` and `mapred` (if they do not exist) . They are dedicated to run Hadoop servers and should not be used for something else.
+This package will create the Unix users `hdfs:hadoop`, `yarn:hadoop` and `mapred:hadoop` (if they do not exist).
 
-Verifications:
-* Login as `hdfs` and add a big file to HDFS for instance `hadoop fs -put  /usr/portage/distfiles/hadoop-2.7.1.tar.gz  /`
-* Check NameNode status on http://<namenode>:50070/ especially the blocks replication
+*Configuration*
+Basically everything is configured automatically. The environment files `hadoop-env.sh`, `yarn-env.sh` and `mapred-env.sh` are updated with proper `$JAVA_HOME` and a minimal JAVA Heap size in case of sandbox
+The properties files are updated as below
+~~~
+core-site.xml
+  fs.defaultFS          # hdfs://<hostname of "namenode">
+hdfs-site.xml
+  dfs.namenode.name.dir # file:/var/lib/hdfs/name
+  dfs.datanode.data.dir # file:/var/lib/hdfs/data
+  dfs.namenode.secondary.http-address # <hostname of "secondarynode">:50090
+  dfs.replication       # number of data nodes if <3 otherwise 3
+  dfs.blocksize         # 10M if sandbox otherwise default
+  dfs.permissions.superusergroup # set to 'hadoop'
+yarn-site.xml
+  yarn.nodemanager.aux-services # mapreduce_shuffle
+  yarn.resourcemanager.hostname # hostname of "resourcemanager"
+  yarn.nodemanager.resource.memory-mb  # set to minimal value if sandbox
+  yarn.nodemanager.resource.cpu-vcores # set to 1 if sandbox
+  yarn.scheduler.maximum-allocation-mb # set to memory-mb/3 if sandbox
+  yarn.nodemanager.vmem-pmem-ratio     # set to 1 if sandbox
+mapred-site.xml
+  mapreduce.framework.name          # yarn
+  mapreduce.jobhistory.addresss     # <hostname of "historyserver">:10020
+  yarn.app.mapreduce.am.resource.mb # set to minimal value if sandbox
+  mapreduce.map.memory.mb           # set to minimal value if sandbox
+  mapreduce.reduce.memory.mb        # set to minimal value if sandbox
+~~~
+
+*Verifications*
+* Add your standard Unix user to group `hadoop`
+* Log with this Unix user, create the home directory eg eg `hadoop fs -mkdir -p /user/guest`
+* Add one file to HDFS eg `hadoop fs -put /usr/portage/distfiles/hadoop-2.7.1.tar.gz`
+* Check NameNode status on http://<namenode>:50070/ especially the #blocks and the replication
 * Check ResourceManager status on http://<resourcemanager>:8088/
 * Check HistoryServer status on http://<historyserver>:19888/
+* Renove the file  `hadoop fs -rm /usr/portage/distfiles/hadoop-2.7.1.tar.gz`
 * Install Pig and run a MapReduce Job
 
 ### Apache Pig (0.15.0)
+*Installation*
 ~~~
 emerge dev-lang/apache-pig-bin
 ~~~
-Verifications:
-* Login as `mapred` (any Unix user can be used), download and extract the tutorial file `https://cwiki.apache.org/confluence/download/attachments/27822259/pigtutorial.tar.gz`
-* From the extracted dir, run `hadoop fs -copyFromLocal excite.log.bz2 .` (in case of failure create the HDFS dir `/user/mapred` with proper rights)
-* Run Pig in local mode: `pig -x local script1-local.pig` 
+*Verifications*
+* From your standard Unix user, download the tutorial file `https://cwiki.apache.org/confluence/download/attachments/27822259/pigtutorial.tar.gz`, extract from the archive the file `excite.log.bz2` and unzip it
+* Add it to HDFS `hadoop fs -put excite.log` (with sandbox settings file is spit in 4 blocks)
+* Run Grunt shell `epig` then
+~~~
+a = LOAD 'excite.log' USING PigStorage('\t') AS (user, time, query:chararray);
+b = FILTER a BY (query MATCHES '.*queen.*');
+STORE b into 'verif_pig';
+~~~
+
+
+Pig in local mode: `pig -x local script1-local.pig` 
 * Run Pig in mapreduce mode: `pig script1-hadoop.pig`
 
+
 ### Apache Hive (1.2.1)
+* Install MySQL for the Hive Metastore database and create file /root/.my.cnf to allow direct connection from Unix user `root`
 ~~~
 emerge dev-db/apache-hive-bin
 su - hdfs -c 'hadoop fs -mkdir /tmp/hive /user/hive/warehouse'
@@ -144,38 +188,8 @@ su - cassandra nodetool status   # cluster status
 
 
 ## Environment Details
-* Unix Users 
-~~~
-hdfs:hadoop       # run HDFS Namenode and Data nodes
-yarn:hadoop       # run YARN servers
-mapred:hadoop     # run History Server
-hive:hadoop       # run Hive server?
-spark:hadoop      # run Spark server
-solr:hadoop       
-cassandra:cassandra
-~~~
-* Directories 
-~~~
-/opt/hadoop       # Hadoop binaries
-/etc/hadoop       # Hadoop config files (including Pig, Spark)
-/var/log/hadoop   # Hadoop log files
-/data/hdfs        # HDFS data files
 
-/opt/pig          # Pig binaries
-
-/opt/hive         # Hive binaries
-
-/opt/spark        # Spark binaries
-/etc/spark        # Spark config files
-/data/spark       # Spark working file
-/var/log/spark    # Spark logs
-
-/opt/cassandra    # Cassandra binaries
-/data/cassandra   # Cassandra DB files
-/var/log/cassandra # Cassandra log files
-
-~~~
-* Environment files
+Environment files
 
 The configuration files `hadoop-env.sh`, `yarn-env.sh` and `mapred-env.sh` are updated with local `$JAVA_HOME` and a minimal JAVA Heap size in case of sandbox
 * Hadoop properties
