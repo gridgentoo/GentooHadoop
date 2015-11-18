@@ -79,11 +79,11 @@ mapred-site.xml
 *Verifications*
 * Add your standard Unix user to group `hadoop`
 * Log with this Unix user, create the home directory eg eg `hadoop fs -mkdir -p /user/guest`
-* Add one file to HDFS eg `hadoop fs -put /usr/portage/distfiles/hadoop-2.7.1.tar.gz`
+* Add one sample file to HDFS eg `hadoop fs -put /usr/portage/distfiles/hadoop-2.7.1.tar.gz`
 * Check NameNode status on http://<namenode>:50070/ especially the #blocks and the replication
 * Check ResourceManager status on http://<resourcemanager>:8088/
 * Check HistoryServer status on http://<historyserver>:19888/
-* Renove the file  `hadoop fs -rm /usr/portage/distfiles/hadoop-2.7.1.tar.gz`
+* Remove the sample file  `hadoop fs -rm /usr/portage/distfiles/hadoop-2.7.1.tar.gz`
 * Install Pig and run a MapReduce Job
 
 ### Apache Pig (0.15.0)
@@ -93,28 +93,26 @@ emerge dev-lang/apache-pig-bin
 ~~~
 *Verifications*
 * From your standard Unix user, download the tutorial file `https://cwiki.apache.org/confluence/download/attachments/27822259/pigtutorial.tar.gz`, extract from the archive the file `excite.log.bz2` and unzip it
-* Add it to HDFS `hadoop fs -put excite.log` (with sandbox settings file is spit in 4 blocks)
-* Run Grunt shell `epig` then
+* Add it to HDFS `hadoop fs -put excite.log` (with sandbox settings file is split in 4 blocks)
+* Run Grunt shell `pig` then
 ~~~
 a = LOAD 'excite.log' USING PigStorage('\t') AS (user, time, query:chararray);
 b = FILTER a BY (query MATCHES '.*queen.*');
 STORE b into 'verif_pig';
 ~~~
-
-
-Pig in local mode: `pig -x local script1-local.pig` 
-* Run Pig in mapreduce mode: `pig script1-hadoop.pig`
-
+*Issues*
+* Tez not yet supported
 
 ### Apache Hive (1.2.1)
+*Installation*
 * Install MySQL for the Hive Metastore database and create file /root/.my.cnf to allow direct connection from Unix user `root`
 ~~~
 emerge dev-db/apache-hive-bin
 su - hdfs -c 'hadoop fs -mkdir /tmp/hive /user/hive/warehouse'
 su - hdfs -c 'hadoop fs -chmod 733 /tmp/hive /user/hive/warehouse'
 ~~~
-Verifications:
-* Login as `hive`, unzip the above file excite.log.bz2 and copy it to HDFS (`hadoop fs -copyFromLocal excite.log`)
+*Verifications*
+* From your standard Unix user 
 * Run the Unix command `/opt/hive/bin/hive` then enter following HQL lines
 ~~~
 CREATE TABLE sample (userid STRING, time INT, query STRING)  ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';

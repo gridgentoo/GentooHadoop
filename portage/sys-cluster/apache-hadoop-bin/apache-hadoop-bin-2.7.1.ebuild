@@ -88,6 +88,10 @@ EOF
   <name>fs.defaultFS</name>
   <value>hdfs://$namenode</value>
 </property>
+EOF
+	sed -i '/<configuration>/r tmpfile' etc/hadoop/core-site.xml || die
+	# hdfs-site.xml
+	cat >tmpfile<<EOF
 <property>
   <name>dfs.namenode.name.dir</name>
   <value>file:/var/lib/hdfs/name</value>
@@ -205,7 +209,7 @@ EOF
 
 	# install dir
 	dodir "${INSTALL_DIR}"
-	rm -f */*.cmd
+	rm -f sbin/*.cmd etc/hadoop/*.cmd
 	fperms g+w etc/hadoop/*
 	mv "${S}"/* "${D}${INSTALL_DIR}"
 	fowners -Rf root:hadoop "${INSTALL_DIR}"
