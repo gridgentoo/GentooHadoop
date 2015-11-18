@@ -136,7 +136,7 @@ EOF
 	if [ $sandbox -ne 0 ] ; then cat >>tmpfile<<EOF
 <property>
   <name>yarn.nodemanager.resource.memory-mb</name>
-  <value>576</value>
+  <value>384</value>
 </property>
 <property>
   <name>yarn.nodemanager.resource.cpu-vcores</name>
@@ -144,15 +144,15 @@ EOF
 </property>
 <property>
   <name>yarn.scheduler.minimum-allocation-mb</name>
-  <value>96</value>
+  <value>192</value>
 </property>
 <property>
   <name>yarn.scheduler.maximum-allocation-mb</name>
   <value>192</value>
 </property>
 <property>
-  <name>yarn.nodemanager.vmem-pmem-ratio</name>
-  <value>1</value>
+  <name>yarn.nodemanager.vmem-check-enabled</name>
+  <value>false</value>
 </property>
 EOF
 	fi
@@ -177,26 +177,13 @@ EOF
   <value>192</value>
 </property>
 <property>
-  <name>yarn.app.mapreduce.am.command-opts</name>
-  <value>-Xmx128m</value>
-</property>
-
 <property>
   <name>mapreduce.map.memory.mb</name>
   <value>192</value>
 </property>
 <property>
-  <name>mapreduce.map.java.opts</name>
-  <value>-Xmx128m</value>
-</property>
-
-<property>
   <name>mapreduce.reduce.memory.mb</name>
   <value>192</value>
-</property>
-<property>
-  <name>mapreduce.reduce.java.opts</name>
-  <value>-Xmx128m</value>
 </property>
 EOF
 	fi

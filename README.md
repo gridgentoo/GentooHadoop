@@ -27,7 +27,7 @@ find /usr/local/portage/ -name *.ebuild -exec ebuild {} digest \;
 ## Components
 
 ### Apache Hadoop Common (2.7.1)
-*Preparation*
+**Preparation**
 * (optional) Specify the cluster topology in `/etc/hosts` by adding the server(s) supported by each host in the comments. Also add the keyword `sandbox` to each line if you want a Sandbox deployment with minimal settings. 
 Example:
 ~~~
@@ -36,7 +36,7 @@ Example:
 ~~~
 If not done, installation will assume a single-node cluster 
 
-*Installation*
+**Installation**
 ~~~
 emerge sys-cluster/apache-hadoop-bin
 su - hdfs -c 'hdfs namenode -format'   # format the namenode
@@ -48,7 +48,7 @@ rc-service hadoop-xxxx start            # start module xxx
 
 This package will create the Unix users `hdfs:hadoop`, `yarn:hadoop` and `mapred:hadoop` (if they do not exist).
 
-*Configuration*
+**Configuration**
 Basically everything is configured automatically. The environment files `hadoop-env.sh`, `yarn-env.sh` and `mapred-env.sh` are updated with proper `$JAVA_HOME` and a minimal JAVA Heap size in case of sandbox
 The properties files are updated as below
 ~~~
@@ -76,7 +76,7 @@ mapred-site.xml
   mapreduce.reduce.memory.mb        # set to minimal value if sandbox
 ~~~
 
-*Verifications*
+**Verifications**
 * Add your standard Unix user to group `hadoop`
 * Log with this Unix user, create the home directory eg eg `hadoop fs -mkdir -p /user/guest`
 * Add one sample file to HDFS eg `hadoop fs -put /usr/portage/distfiles/hadoop-2.7.1.tar.gz`
@@ -87,11 +87,11 @@ mapred-site.xml
 * Install Pig and run a MapReduce Job
 
 ### Apache Pig (0.15.0)
-*Installation*
+**Installation**
 ~~~
 emerge dev-lang/apache-pig-bin
 ~~~
-*Verifications*
+**Verifications**
 * From your standard Unix user, download the tutorial file `https://cwiki.apache.org/confluence/download/attachments/27822259/pigtutorial.tar.gz`, extract from the archive the file `excite.log.bz2` and unzip it
 * Add it to HDFS `hadoop fs -put excite.log` (with sandbox settings file is split in 4 blocks)
 * Run Grunt shell `pig` then
@@ -100,22 +100,21 @@ a = LOAD 'excite.log' USING PigStorage('\t') AS (user, time, query:chararray);
 b = FILTER a BY (query MATCHES '.*queen.*');
 STORE b into 'verif_pig';
 ~~~
-*Issues*
+**Issues**
 * Tez not yet supported
 
 ### Apache Hive (1.2.1)
-*Installation*
+**Installation**
 * Install MySQL for the Hive Metastore database and create file /root/.my.cnf to allow direct connection from Unix user `root`
 ~~~
 emerge dev-db/apache-hive-bin
 su - hdfs -c 'hadoop fs -mkdir /tmp/hive /user/hive/warehouse'
 su - hdfs -c 'hadoop fs -chmod 733 /tmp/hive /user/hive/warehouse'
 ~~~
-*Verifications*
-* From your standard Unix user 
-* Run the Unix command `/opt/hive/bin/hive` then enter following HQL lines
+**Verifications**
+* From your standard Unix user, run the command `hive` then enter following HQL lines
 ~~~
-CREATE TABLE sample (userid STRING, time INT, query STRING)  ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
+CREATE TABLE sample (userid STRING,time INT,query STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
 LOAD DATA INPATH 'excite.log' OVERWRITE INTO TABLE sample;
 SELECT COUNT(*) FROM sample;
 -- this will run a mapreduce job that should return 944954
@@ -126,7 +125,7 @@ DROP TABLE sample;
 ~~~
 emerge dev-db/apache-hbase-bin
 ~~~
-Verifications:
+**Verifications:**
 *in progress*
 
 ### Apache Sqoop (1.99.6)
@@ -184,35 +183,6 @@ su - cassandra nodetool status   # cluster status
 ~~~
 
 
-
-## Environment Details
-
-Environment files
-
-The configuration files `hadoop-env.sh`, `yarn-env.sh` and `mapred-env.sh` are updated with local `$JAVA_HOME` and a minimal JAVA Heap size in case of sandbox
-* Hadoop properties
-~~~
-core-site.xml
-  fs.defaultFS          # hdfs://<hostname of "namenode">
-hdfs-site.xml
-  dfs.namenode.name.dir # file:/data/hdfs/name
-  dfs.datanode.data.dir # file:/data/hdfs/data
-  dfs.namenode.secondary.http-address # <hostname of "secondarynode">:50090
-  dfs.replication       # number of data nodes if <3 otherwise use default
-  dfs.blocksize         # 10M if sandbox otherwise use default
-yarn-site.xml
-  yarn.nodemanager.aux-services # mapreduce_shuffle
-  yarn.resourcemanager.hostname # hostname of "resourcemanager"
-  yarn.scheduler.minimum-allocation-mb # set to 100M for sandbox 
-  yarn.scheduler.maximum-allocation-mb # set to 100M for sandbox
-  yarn.nodemanager.resource.memory-mb  # set to 200M for sandbox 
-mapred-site.xml
-  mapreduce.framework.name      # yarn
-  mapreduce.jobhistory.addresss # <hostname of "historyserver">:10020
-  mapreduce.map.memory.mb       # set to 100M for sandbox 
-  mapreduce.reduce.memory.mb    # set to 100M for sandbox 
-  yarn.app.mapreduce.am.resource.mb   # set to 100M for sandbox
-~~~
 
 ## To Do
 * Review the ebuilds code to align with best practices

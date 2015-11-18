@@ -85,6 +85,7 @@ EOF
 HIVE_HOME="${INSTALL_DIR}"
 HCAT_HOME="${INSTALL_DIR}/hcatalog"
 HIVE_CONF_DIR="${INSTALL_DIR}/conf"
+PATH="${INSTALL_DIR}/bin"
 EOF
 	doenvd 99hive
 	# Hive needs JDBS libs
