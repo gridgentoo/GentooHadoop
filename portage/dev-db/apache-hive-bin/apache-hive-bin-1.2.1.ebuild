@@ -1,42 +1,39 @@
-# Copyright 1999-2010 Gentoo Foundation
+# Copyright 1999-2015 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Id$
 
 EAPI="5"
 
 inherit user
 
 MY_PN="hive"
-MY_P="${MY_PN}-${PV}"
 
 DESCRIPTION="High-level language and platform for analyzing large data sets"
 HOMEPAGE="http://hadoop.apache.org/"
-SRC_URI="mirror://apache/${MY_PN}/${MY_P}/apache-${MY_P}-bin.tar.gz"
+SRC_URI="mirror://apache/${MY_PN}/${MY_PN}-${PV}/apache-${MY_PN}-${PV}-bin.tar.gz"
 
 LICENSE="Apache-2.0"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-RESTRICT="mirror binchecks"
 IUSE=""
 
-DEPEND=""
-RDEPEND="dev-db/mysql
-	dev-java/jdbc-mysql
-	>=virtual/jre-1.6
-	sys-cluster/apache-hadoop-bin"
+DEPEND="dev-db/mysql
+dev-java/jdbc-mysql"
+RDEPEND="$DEPEND
+sys-cluster/apache-hadoop-bin"
 
-S="${WORKDIR}/apache-${MY_P}-bin"
-INSTALL_DIR="/opt/${MY_PN}"
+S="${WORKDIR}/apache-${MY_PN}-${PV}-bin"
+INSTALL_DIR="/opt/${MY_PN}-${PV}"
 
 pkg_setup(){
 	enewgroup hadoop
 	enewuser hive -1 /bin/bash /home/hive hadoop
-	chgrp hadoop /home/hive
 }
 
 src_install() {
 	HIVEPASS="hive123"
 	IP=`grep $HOSTNAME /etc/hosts | awk '{print $1 }' `
+
 	# create hive-site.xml
 	cat > conf/hive-site.xml <<EOF
 <configuration>
@@ -66,28 +63,31 @@ src_install() {
 </property>
 </configuration>
 EOF
-	insinto "${INSTALL_DIR}"
-	mv "${S}"/* "${D}${INSTALL_DIR}"
-	chown -Rf root:hadoop "${D}${INSTALL_DIR}"
-
-	cat > 99"${MY_PN}" <<EOF
-HIVE_HOME="${INSTALL_DIR}"
-PATH="${INSTALL_DIR}/bin"
-HCAT_HOME="${INSTALL_DIR}/hcatalog"
-HIVE_CONF_DIR="${INSTALL_DIR}/conf"
-EOF
-	doenvd 99"${MY_PN}"
-	dosym /usr/share/jdbc-mysql/lib/jdbc-mysql.jar ${INSTALL_DIR}/lib/jdbc-mysql.jar
 
 	# create matastore in MySQL
 	sudo mysql -u root <<EOF
 CREATE DATABASE metastore;
 USE metastore;
-SOURCE /opt/hive/scripts/metastore/upgrade/mysql/hive-schema-0.10.0.mysql.sql;
+SOURCE ${S}/scripts/metastore/upgrade/mysql/hive-schema-0.10.0.mysql.sql;
 CREATE USER 'hive'@'localhost' IDENTIFIED BY '${HIVEPASS}';
 GRANT ALL ON metastore.* TO 'hive'@'localhost';
 FLUSH PRIVILEGES;
 exit
 EOF
+	[ $? -eq 0 ] || die "unable to create Hive metastore in MySQL"
 
+	#install
+	insinto "${INSTALL_DIR}"
+	mv "${S}"/* "${D}${INSTALL_DIR}"
+	chown -Rf root:hadoop "${D}${INSTALL_DIR}"
+
+	cat > 99hive <<EOF
+HIVE_HOME="${INSTALL_DIR}"
+HCAT_HOME="${INSTALL_DIR}/hcatalog"
+HIVE_CONF_DIR="${INSTALL_DIR}/conf"
+EOF
+	doenvd 99hive
+	# Hive needs JDBS libs
+	dosym /usr/share/jdbc-mysql/lib/jdbc-mysql.jar ${INSTALL_DIR}/lib/jdbc-mysql.jar
+	dosym ${INSTALL_DIR} /opt/${MY_PN}
 }

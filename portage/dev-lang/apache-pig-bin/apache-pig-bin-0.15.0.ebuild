@@ -32,7 +32,7 @@ src_install() {
 PIG_HOME="${INSTALL_DIR}"
 PIG_CLASSPATH="/opt/hadoop"
 EOF
-	[ `egrep -c "^[0-9].*#.* sandbox" /etc/hosts` -ne 0 ] && echo "PIG_HEAPSIZE=200" >> 99pig
+	[ `egrep -c "^[0-9].*#.* sandbox" /etc/hosts` -ne 0 ] && echo "PIG_HEAPSIZE=192" >> 99pig
 	doenvd 99pig
 	dosym ${INSTALL_DIR} /opt/${MY_PN}
 }
