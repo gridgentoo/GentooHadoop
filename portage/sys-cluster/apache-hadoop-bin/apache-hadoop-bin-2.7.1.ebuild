@@ -52,7 +52,7 @@ src_install() {
 		fi
 	fi
 	javaheap=1024
-	[ $sandbox -ne 0 ] && javaheap=128
+	[ $sandbox -ne 0 ] && javaheap=192
 
 	# hadoop-env.sh
 	cat >tmpfile<<EOF
@@ -176,7 +176,6 @@ EOF
   <name>yarn.app.mapreduce.am.resource.mb</name>
   <value>192</value>
 </property>
-<property>
 <property>
   <name>mapreduce.map.memory.mb</name>
   <value>192</value>

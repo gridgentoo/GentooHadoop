@@ -101,15 +101,14 @@ b = FILTER a BY (query MATCHES '.*queen.*');
 STORE b into 'verif_pig';
 ~~~
 **Issues**
-* Tez not yet supported
+* `pig -x tez` not yet supported
+* `pig -useHCataloge` : add to CLASSPATH datanucleus-*.jar and jdbc-mysql.jar
 
 ### Apache Hive (1.2.1)
 **Installation**
 * Install MySQL for the Hive Metastore database and create file /root/.my.cnf to allow direct connection from Unix user `root`
 ~~~
 emerge dev-db/apache-hive-bin
-su - hdfs -c 'hadoop fs -mkdir /tmp/hive /user/hive/warehouse'
-su - hdfs -c 'hadoop fs -chmod 733 /tmp/hive /user/hive/warehouse'
 ~~~
 **Verifications**
 * From your standard Unix user, run the command `hive` then enter following HQL lines
@@ -125,22 +124,18 @@ DROP TABLE sample;
 ~~~
 emerge dev-db/apache-hbase-bin
 ~~~
-**Verifications:**
+**Verifications**
 *in progress*
 
 ### Apache Sqoop (1.99.6)
 ~~~
 emerge sys-cluster/apache-sqoop-bin
 ~~~
-Verifications:
-*in progress*
-
-### Apache Flume (1.6.0)
-~~~
-emerge sys-cluster/apache-flume-bin
-~~~
-Verifications:
-*in progress*
+**Verifications**
+* In MySQL, create a table `USE test; CREATE TABLE sample (userid varchar(100), time INT,query varchar(100));`
+* then load data to it eg `LOAD DATA INFILE '/home/hadoop/excite.log' INTO TABLE sample FIELDS TERMINATED BY '\t';`
+* Import table to HDFS: `/opt/sqoop/bin/sqoop import --connect jdbc:mysql://localhost/test --username root --pasword *** --table sample -m 1 `
+* It should create a HDFS directory sample 
 
 ### Spark (1.5.0, hadoop based version)
 ~~~
