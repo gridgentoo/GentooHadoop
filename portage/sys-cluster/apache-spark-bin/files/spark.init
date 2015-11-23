@@ -4,7 +4,7 @@
 # $Header: $
 
 DAEMON=${SVCNAME/spark-}
-SPARK_PID_DIR=/var/run/spark
+SPARK_PID_DIR=/var/run/pids
 
 depend() {
          use dns net ssh
@@ -15,8 +15,8 @@ start() {
     [ -d $SPARK_PID_DIR ] || mkdir -m 777 $SPARK_PID_DIR
     if [ "$DAEMON" == "worker" ]
     then sparkmaster=`egrep  "^[0-9].*#.* sparkmaster" /etc/hosts | awk '{ print $3}' `
-	 CMD=" /opt/spark/sbin/start-slave.sh -- spark://$sparkmaster:7077"
-    else CMD="/opt/spark/sbin/start-master.sh"
+	 CMD="$SPARK_HOME/sbin/start-slave.sh -- spark://$sparkmaster:7077"
+    else CMD="$SPARK_HOME/sbin/start-master.sh"
     fi
     ebegin "Starting Apache Spark $DAEMON"
     start-stop-daemon --start --quiet -u spark -x ${CMD}

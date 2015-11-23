@@ -49,6 +49,7 @@ rc-service hadoop-xxxx start            # start module xxx
 This package will create the Unix users `hdfs:hadoop`, `yarn:hadoop` and `mapred:hadoop` (if they do not exist).
 
 **Configuration**
+
 Basically everything is configured automatically. The environment files `hadoop-env.sh`, `yarn-env.sh` and `mapred-env.sh` are updated with proper `$JAVA_HOME` and a minimal JAVA Heap size in case of sandbox
 The properties files are updated as below
 ~~~
@@ -102,7 +103,7 @@ STORE b into 'verif_pig';
 ~~~
 **Issues**
 * `pig -x tez` not yet supported
-* `pig -useHCataloge` : add to CLASSPATH datanucleus-*.jar and jdbc-mysql.jar
+* `pig -useHCatalog` : add to CLASSPATH datanucleus-*.jar and jdbc-mysql.jar
 
 ### Apache Hive (1.2.1)
 **Installation**
@@ -110,6 +111,7 @@ STORE b into 'verif_pig';
 ~~~
 emerge dev-db/apache-hive-bin
 ~~~
+This package will create the Unix user `hive:hadoop`
 **Verifications**
 * From your standard Unix user, run the command `hive` then enter following HQL lines
 ~~~
@@ -127,7 +129,7 @@ emerge dev-db/apache-hbase-bin
 **Verifications**
 *in progress*
 
-### Apache Sqoop (1.99.6)
+### Apache Sqoop (1.4.6)
 ~~~
 emerge sys-cluster/apache-sqoop-bin
 ~~~
@@ -135,19 +137,26 @@ emerge sys-cluster/apache-sqoop-bin
 * In MySQL, create a table `USE test; CREATE TABLE sample (userid varchar(100), time INT,query varchar(100));`
 * then load data to it eg `LOAD DATA INFILE '/home/hadoop/excite.log' INTO TABLE sample FIELDS TERMINATED BY '\t';`
 * Import table to HDFS: `/opt/sqoop/bin/sqoop import --connect jdbc:mysql://localhost/test --username root --pasword *** --table sample -m 1 `
-* It should create a HDFS directory sample 
+* It should create a HDFS directory `sample`
 
 ### Spark (1.5.0, hadoop based version)
+**Preparation**
+* Specify the spark master in `/etc/hosts`. Optionally add the keyword `sandbox` for a deployment with minimal settings
+* Example: `192.168.56.11 hadoop1.mydomain.com hadoop1 # sandbox sparkmaster`
+**Installation**
 ~~~
 emerge sys-cluster/apache-spark-bin
 rc-service spark-master start
 rc-service spark-worker start # to be done on each cluster node
-
 ~~~
-Verifications:
+This package will create the Unix user `spark:hadoop` and 
+**Configuration**
+
+Spark configuration can be found in `/etc/spark`
+
+**Verifications**
 * Check cluster status on http://<master>:7077/, you should see all workers there
-* Login as `spark` and copy a text file for instance `README.md`
-* Run the following commands in PythonSpark (`pyspark`) and check results
+* From your standard Unix user, create a sample text file `README.md`then run in `pyspark`:
 ~~~
 textFile = sc.textFile("README.md")
 textFile.count()
@@ -156,23 +165,26 @@ textFile.count()
 
 
 ### Solr (5.3.1)
+**Installation**
 ~~~
 emerge dev-db/apache-solr-bin
 rc-service solr start
 rc-update add solr
 ~~~
-Verifications:
+**Verifications**
 * Check status on http://<server>:8983/solr/
 
 
 ### Cassandra (2.2.1 latest)
 Note: cassandra has no dependency with Hadoop Common packages and can be installed separately. 
+**Preparation**
 
-To install cassandra in cluster mode just add the keyword `seed` in `/etc/hosts` for the seed(s)
-The sandbox option will reduce the memory settings to minimum (256MB)
+To install cassandra in cluster mode just add the keyword `cassandraseed` in `/etc/hosts` for the seed(s)
+The keyword `sandbox`can be added too to reduce the memory settings to minimum
+**Installation**
 ~~~
 emerge dev-db/apache-cassandra-bin
-rc-service cassandra start      # start the DB (to be done on all cluster nodes)
+rc-service cassandra start       # start the DB (to be done on all cluster nodes)
 rc-update add cassandra          # add to boot
 su - cassandra nodetool status   # cluster status
 ~~~
@@ -180,8 +192,6 @@ su - cassandra nodetool status   # cluster status
 
 
 ## To Do
-* Review the ebuilds code to align with best practices
-* handle the product versions in installations directories
 * Add the ebuild to the gentoo overlay repository (https://wiki.gentoo.org/wiki/Project:Overlays)
 
 
