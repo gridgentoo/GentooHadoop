@@ -2,16 +2,24 @@
 # Copyright 1999-2014 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
-
-[ -d /var/run/pids ] || mkdir -m=777 /var/run/pids
-
-pidfile="/var/run/pid/cassandra.pid"
-command="/opt/cassandra/bin/cassandra"
-command_args="-p $PIDFILE"
-start_stop_daemon_args="-u cassandra"
-
-
 depend() {
     use net
+}
+
+PIDDIR=/var/run/pids
+PIDFILE=$PIDDIR/cassandra.pid
+[ -d $PIDDIR ] || mkdir -m=777 $PIDDIR
+
+
+start() {
+    ebegin "Starting Apache Cassandra"
+    start-stop-daemon --start --quiet --user cassandra --pidfile $PIDFILE --exec /opt/cassandra-3.0.0/bin/cassandra -- -p $PIDFILE
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping Apache Cassandra"
+    start-stop-daemon --stop --quiet --pidfile $PIDFILE
+    eend $?
 }
 

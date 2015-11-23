@@ -185,10 +185,10 @@ The keyword `sandbox`can be added too to reduce the memory settings to minimum
 ~~~
 emerge dev-db/apache-cassandra-bin
 rc-service cassandra start       # start the DB (to be done on all cluster nodes)
-rc-update add cassandra          # add to boot
 su - cassandra nodetool status   # cluster status
 ~~~
-
+**Verifications**
+* 
 
 
 ## To Do

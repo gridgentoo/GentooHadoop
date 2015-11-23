@@ -18,14 +18,16 @@ start() {
 	 CMD="$SPARK_HOME/sbin/start-slave.sh -- spark://$sparkmaster:7077"
     else CMD="$SPARK_HOME/sbin/start-master.sh"
     fi
+    
     ebegin "Starting Apache Spark $DAEMON"
-    start-stop-daemon --start --quiet -u spark -x ${CMD}
+    start-stop-daemon --start --quiet --pidfile $SPARK_PID_DIR/spark-spark-org.apache.spark.deploy.${DAEMON}.${DAEMON^}-1.pid \
+		      -u spark -x ${CMD}
     eend $?
 }
 
 stop() {
     ebegin "Stopping Apache Spark $DAEMON"
-    start-stop-daemon --stop --quiet --pidfile $SPARK_PID_DIR/spark-${HOSTNAME}-org.apache.spark.deploy.${DAEMON}.*.pid
+    start-stop-daemon --stop --quiet --pidfile $SPARK_PID_DIR/spark-spark-org.apache.spark.deploy.${DAEMON}.${DAEMON^}-1.pid
     eend $?
 }
 
