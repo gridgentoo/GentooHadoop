@@ -156,10 +156,9 @@ Spark configuration can be found in `/etc/spark`
 
 **Verifications**
 * Check cluster status on http://<master>:7077/, you should see all workers there
-* From your standard Unix user, create a sample text file `README.md`then run in `pyspark`:
+* From your standard Unix user, create a sample text file and run the Word Count in `pyspark`:
 ~~~
-textFile = sc.textFile("README.md")
-textFile.count()
+sc.textFile("SAMPLE.txt").flatMap(lambda s: s.split(" ")).map(lambda s: (s, 1)).reduceByKey(lambda a, b: a + b).collect()
 ~~~
 * Run a spark job (to be completed)
 

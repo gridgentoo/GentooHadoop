@@ -56,6 +56,11 @@ src_install() {
 	# update storage dir
 	sed -e "s|cassandra_storagedir=\"\$CASSANDRA_HOME/data\"|cassandra_storagedir=\"/var/lib/cassandra/\"|g" \
 		-i bin/cassandra.in.sh || die
+	# update log dir
+	sed -e "s|cassandra.logdir=\$CASSANDRA_HOME\/logs|cassandra.logdir=\/var\/log\/cassandra|g" \
+		-i bin/cassandra || die
+	# update pyspark
+	sed -e "s|python |python 2|" -i bin/cqlsh || die
 
 	#install
 	insinto ${INSTALL_DIR}
@@ -65,7 +70,6 @@ src_install() {
 	diropts -m770 -o root -g hadoop
 	dodir /var/log/cassandra
 	dodir /var/lib/cassandra
-	dosym /var/log/cassandra ${INSTALL_DIR}/logs
 
 	cat > 99cassandra <<EOF
 PATH="${INSTALL_DIR}/bin"
