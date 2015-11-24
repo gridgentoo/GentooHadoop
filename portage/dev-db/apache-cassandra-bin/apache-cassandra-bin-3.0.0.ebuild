@@ -60,7 +60,7 @@ src_install() {
 	sed -e "s|cassandra.logdir=\$CASSANDRA_HOME\/logs|cassandra.logdir=\/var\/log\/cassandra|g" \
 		-i bin/cassandra || die
 	# update pyspark
-	sed -e "s|python |python 2|" -i bin/cqlsh || die
+	sed -e "s|python |python2 |g" -i bin/cqlsh || die
 
 	#install
 	insinto ${INSTALL_DIR}
