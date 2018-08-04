@@ -16,8 +16,6 @@ emerge dev-db/apache-solr-bin
 emerge dev-db/apache-cassandra-bin
 
 
-### *this project is no longer supported*
-
 # Gentoo Hadoop
 An up-to-date deployment process for Hadoop ecosystem on Gentoo Linux. The ebuilds were collected from different repositories and updated to align with the latest software versions and the deployments modes described below
 
