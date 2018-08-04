@@ -1,3 +1,6 @@
+# Установка Hadoop в Gentoo 
+emerge sys-cluster/apache-hadoop-bin
+
 ### *this project is no longer supported*
 
 # Gentoo Hadoop
