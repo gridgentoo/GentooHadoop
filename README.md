@@ -1,5 +1,6 @@
 # Установка Hadoop в Gentoo 
 emerge sys-cluster/apache-hadoop-bin
+emerge dev-lang/apache-pig-bin
 
 ### *this project is no longer supported*
 
