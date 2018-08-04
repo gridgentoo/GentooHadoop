@@ -13,7 +13,7 @@ emerge dev-db/apache-solr-bin
 
 emerge dev-db/apache-cassandra-bin
 
-# ebuld Spark для Gentoo
+# ebuilds Spark для Gentoo
 emerge sys-cluster/apache-spark-bin
 
 https://github.com/gridgentoo/GentooHadoop/blob/master/portage/sys-cluster/apache-spark-bin/apache-spark-bin-1.5.0.ebuild
