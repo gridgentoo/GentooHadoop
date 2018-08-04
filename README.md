@@ -1,5 +1,14 @@
 # Установка Hadoop environments в Gentoo : : BigdataOverlay
+
+# ebuilds hadoop для Gentoo
 emerge sys-cluster/apache-hadoop-bin
+
+https://github.com/gridgentoo/GentooHadoop/blob/master/portage/sys-cluster/apache-hadoop-bin/apache-hadoop-bin-2.7.1.ebuild
+
+# ebuilds Spark для Gentoo
+emerge sys-cluster/apache-spark-bin
+
+https://github.com/gridgentoo/GentooHadoop/blob/master/portage/sys-cluster/apache-spark-bin/apache-spark-bin-1.5.0.ebuild
 
 emerge dev-db/apache-hive-bin
 
@@ -12,11 +21,6 @@ emerge sys-cluster/apache-sqoop-bin
 emerge dev-db/apache-solr-bin
 
 emerge dev-db/apache-cassandra-bin
-
-# ebuilds Spark для Gentoo
-emerge sys-cluster/apache-spark-bin
-
-https://github.com/gridgentoo/GentooHadoop/blob/master/portage/sys-cluster/apache-spark-bin/apache-spark-bin-1.5.0.ebuild
 
 
 # Gentoo Hadoop
