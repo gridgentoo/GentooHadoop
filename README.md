@@ -1,7 +1,7 @@
 
-ebuild — формат bash-сценариев для системы управления пакетами Portage в операционной системе Gentoo.
-
 # Установка Hadoop environments в Gentoo : : BigdataOverlay
+
+ebuild — формат bash-сценариев для системы управления пакетами Portage в операционной системе Gentoo.
 
 # ebuilds hadoop для Gentoo
 emerge sys-cluster/apache-hadoop-bin
