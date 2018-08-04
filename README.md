@@ -1,6 +1,8 @@
 # Установка Hadoop в Gentoo 
 emerge sys-cluster/apache-hadoop-bin
 
+emerge dev-db/apache-hive-bin
+
 emerge dev-lang/apache-pig-bin
 
 
