@@ -1,4 +1,4 @@
-# Установка Hadoop в Gentoo _____BigdataOverlay
+# Установка Hadoop environments в Gentoo : : BigdataOverlay
 emerge sys-cluster/apache-hadoop-bin
 
 emerge dev-db/apache-hive-bin
