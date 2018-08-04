@@ -5,6 +5,16 @@ emerge dev-db/apache-hive-bin
 
 emerge dev-lang/apache-pig-bin
 
+emerge dev-db/apache-hbase-bin
+
+emerge sys-cluster/apache-sqoop-bin
+
+emerge sys-cluster/apache-spark-bin
+
+emerge dev-db/apache-solr-bin
+
+emerge dev-db/apache-cassandra-bin
+
 
 ### *this project is no longer supported*
 
