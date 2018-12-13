@@ -1,14 +1,14 @@
 
-# Установка Hadoop environments в Gentoo : : BigdataOverlay
+## Установка Hadoop environments в Gentoo : : BigdataOverlay
 
 ebuild — формат bash-сценариев для системы управления пакетами Portage в операционной системе Gentoo.
 
-# ebuilds hadoop для Gentoo
+## ebuilds hadoop для Gentoo
 emerge sys-cluster/apache-hadoop-bin
 
 https://github.com/gridgentoo/GentooHadoop/blob/master/portage/sys-cluster/apache-hadoop-bin/apache-hadoop-bin-2.7.1.ebuild
 
-# ebuilds Spark для Gentoo
+## ebuilds Spark для Gentoo
 emerge sys-cluster/apache-spark-bin
 
 https://github.com/gridgentoo/GentooHadoop/blob/master/portage/sys-cluster/apache-spark-bin/apache-spark-bin-1.5.0.ebuild
